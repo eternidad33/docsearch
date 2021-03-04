@@ -1,3 +1,5 @@
+# PyCharm IDEA 项目配置
 .idea
 
-
+# vscode 缓存
+.history
