@@ -7,5 +7,3 @@
 *.log
 
 */__pycache__/
-
-abc/
