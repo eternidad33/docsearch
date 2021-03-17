@@ -130,6 +130,6 @@ class Article:
 
 if __name__ == '__main__':
     a = Article(url="https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=CJFD&dbname=CJFDAUTO&filename=WXJY202103002&v=1Tes7Y0J%25mmd2FPw4BHasEf4Sx6c93Huj0RsRviOBVJL08IBBs94h%25mmd2BTDQNe4KYlw4QDvz")
-    f = open("article.csv", 'a+', encoding='utf-8', newline="")
+    f = open("csv/article.csv", 'a+', encoding='utf-8', newline="")
     a.save_csv(f)
     f.close()

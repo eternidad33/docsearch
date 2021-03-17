@@ -38,7 +38,7 @@ class ArticleList:
         """
         爬取列表信息,并存储到CSV文件中
         """
-        f = open("articlelist.csv", 'a+', encoding='utf-8', newline="")
+        f = open("csv/articlelist.csv", 'a+', encoding='utf-8', newline="")
         f_csv = csv.writer(f)
         # f_csv.writerow(("name", "l", "source", "date", "data"))
         article_table = self.driver.find_element_by_class_name("result-table-list")
