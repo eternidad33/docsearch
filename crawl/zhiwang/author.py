@@ -8,7 +8,7 @@ class Author:
     name = ''
     school = ''
     major = ''
-    sum_public = ''
+    sum_publish = ''
     sum_download = ''
     fields = []
     articles = []
@@ -40,7 +40,7 @@ class Author:
         self.name = name_tag.text if name_tag else ""
         self.school = school_tag.text if school_tag else ""
         self.major = major_tag.text if major_tag else ""
-        self.sum_public = sum_public_tag.text if sum_public_tag else ""
+        self.sum_publish = sum_public_tag.text if sum_public_tag else ""
         self.sum_download = sum_download_tag.text if sum_download_tag else ""
         print("【作者信息】{0: ^12} 爬取成功！".format(self.name))
 
@@ -118,7 +118,7 @@ class Author:
         self.crawl_teacher()
         self.crawl_students()
         f_csv = csv.writer(f)
-        f_csv.writerow((self.name, self.school, self.major, self.sum_public, self.sum_download, self.fields,
+        f_csv.writerow((self.name, self.school, self.major, self.sum_publish, self.sum_download, self.fields,
                         self.articles, self.teacher, self.students))
         self.close_driver()
 
