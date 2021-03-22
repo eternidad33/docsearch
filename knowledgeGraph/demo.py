@@ -11,7 +11,7 @@ g = Graph(auth=('neo4j', '123456'))
 g.run('match(n) detach delete n')
 
 print('【neo4j】开始存储文章节点')
-f_article = open('../crawl/zhiwang/csv/article.csv', encoding='utf-8')
+f_article = open('../crawl/cnki/csv/article.csv', encoding='utf-8')
 reader_article = csv.reader(f_article)
 header_1 = next(reader_article)
 for row in reader_article:
@@ -34,7 +34,7 @@ for row in reader_article:
 print('【neo4j】所有文章节点存储完毕\n')
 
 print('【neo4j】开始存储作者节点')
-f_author = open('../crawl/zhiwang/csv/author.csv', encoding='utf-8')
+f_author = open('../crawl/cnki/csv/author.csv', encoding='utf-8')
 reader_author = csv.reader(f_author)
 header_2 = next(reader_author)
 for row in reader_author:
@@ -57,7 +57,7 @@ for row in reader_author:
 print('【neo4j】所有作者节点存储完毕\n')
 
 print('【neo4j】开始存储学校节点')
-f_school = open('../crawl/zhiwang/csv/school.csv', encoding='utf-8')
+f_school = open('../crawl/cnki/csv/school.csv', encoding='utf-8')
 reader_school = csv.reader(f_school)
 header_3 = next(reader_school)
 for row in reader_school:
