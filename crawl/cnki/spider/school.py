@@ -41,6 +41,6 @@ class School:
 
 
 if __name__ == '__main__':
-    f = open('csv/school.csv', 'a+', encoding='utf-8', newline="")
+    f = open('../csv/school.csv', 'a+', encoding='utf-8', newline="")
     a = School()
     a.save_csv(f)

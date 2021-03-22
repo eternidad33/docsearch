@@ -128,7 +128,7 @@ if __name__ == '__main__':
     # url = "https://kns.cnki.net/kcms/detail/knetsearch.aspx?sfield=au&skey=%E5%8C%85%E7%8E%89%E5%B1%B1&code=08644430"
     # a = Author(url)
     a = Author()
-    f = open("csv/author.csv", 'a+', encoding='utf-8', newline="")
+    f = open("../csv/author.csv", 'a+', encoding='utf-8', newline="")
     # f_csv = csv.writer(f)
     # f_csv.writerow(('姓名', '学校', '专业', '总发布量', '总下载量', '专注领域', '作者文献', '导师', '学生'))
     a.save_csv(f)

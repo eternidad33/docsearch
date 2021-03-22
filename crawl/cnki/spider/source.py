@@ -80,7 +80,7 @@ class Journal(Source):
         except:
             print('【异常】爬取出版文献量异常！url为{}\n'.format(self.url))
 
-    def save_csv(self, file=open('csv/source_journal.csv', 'a+', encoding='utf-8', newline="")):
+    def save_csv(self, file=open('../csv/source_journal.csv', 'a+', encoding='utf-8', newline="")):
         self.crawl_name()
         self.crawl_journals()
         self.crawl_basic_info()
@@ -133,7 +133,7 @@ class School(Source):
         self.count_downloads = ps1_tag[0].span.text if ps1_tag[0].span else ''
         print("【出版信息】爬取完成！\n")
 
-    def save_csv(self, file=open('csv/source_school.csv', 'a+', encoding='utf-8', newline="")):
+    def save_csv(self, file=open('../csv/source_school.csv', 'a+', encoding='utf-8', newline="")):
         self.crawl_name()
         self.crawl_base_info()
         self.crawl_publish_info()

@@ -19,4 +19,4 @@ def author_href_to_url(href):
     dbcode = m1.group(0).replace('sdb=', '')
     skey = m2.group(0).replace('skey=', '')
     code = m3.group(0).replace('acode=', '')
-    return '{}dbcode={}sfield=au&skey={}code={}'.format(baseURL, dbcode, skey, code)
+    return 'dbcode={}sfield=au&skey={}code={}'.format(dbcode, skey, code)

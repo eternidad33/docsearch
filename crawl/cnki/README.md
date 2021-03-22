@@ -52,10 +52,6 @@ def href_to_url(href):
     return '{}dbcode={}sfield=au&skey={}code={}'.format(baseURL, dbcode, skey, code)
 ```
 
-
-
-
-
 ### 作者所在学校URL解析
 
 
@@ -66,3 +62,13 @@ def href_to_url(href):
 
 
 
+## 重构
+
+之前是把爬取的数据暂存到了URL，这次把数据先存到mysql中，重构后的E-R图需要用到5个实体表，4个关系表。
+
+- 实体表：文章，作者，学校，论文所在学校，期刊机构
+- 关系表：文章-作者，师生关系，文章-来源，作者-学校
+
+E-R图如下所示：
+
+![](https://gitee.com/eternidad33/picbed/raw/master/img/24ad65wd2a23s1d.png)

@@ -6,6 +6,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
+from myUtils.urlUtil import author_href_to_url
+
 
 class ArticleList:
     """
@@ -41,8 +43,8 @@ class ArticleList:
         """
         爬取列表信息,并存储到CSV文件中
         """
-        f = open("csv/articlelist.csv", 'a+', encoding='utf-8', newline="")
-        f_re_aa = open('csv/re_article_author.csv', 'a+', encoding='utf-8', newline="")
+        f = open("../csv/articlelist.csv", 'a+', encoding='utf-8', newline="")
+        f_re_aa = open('../csv/re_article_author.csv', 'a+', encoding='utf-8', newline="")
         fcsv = csv.writer(f)
         fcsv_re_aa = csv.writer(f_re_aa)
 
@@ -103,10 +105,11 @@ class ArticleList:
                 d = {'name': author_name, 'href': author_href}
                 if not author_name:
                     print('姓名为空')
+                if author_href != '#' and author_name:
+                    author_href = author_href_to_url(author_href)
+                    fcsv_re_aa.writerow((url_article, author_href))
                 if author_name:
                     print(author_name, author_href)
-                if author_href != '#' and author_name:
-                    fcsv_re_aa.writerow((url_article, author_href))
                 author_list.append(d)
             # print(author_list)
 
