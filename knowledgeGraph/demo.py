@@ -2,9 +2,9 @@ import csv
 
 from py2neo import Graph, Node
 
-from dataProcess.entity.article import Article
-from dataProcess.entity.author import Author
-from dataProcess.entity.school import School
+from handle.entity.article import Article
+from handle.entity.author import Author
+from handle.entity.school import School
 
 # 初始化图数据库
 g = Graph(auth=('neo4j', '123456'))
