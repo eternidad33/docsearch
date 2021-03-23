@@ -1,6 +1,6 @@
-import csv
 import re
 
+import pymysql
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -15,48 +15,55 @@ class ArticleList:
     """
 
     def __init__(self):
-        # 设置浏览器隐藏
         self.url = "https://www.cnki.net/"
         print("知网爬虫模块启动")
-        # chromeOp = webdriver.ChromeOptions()
-        # chromeOp.add_argument("headless")
-        # self.driver = webdriver.Chrome(chrome_options=chromeOp)
-        self.driver = webdriver.Chrome()
+        self.db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnki', port=3306, charset='utf8')
+        self.curr = self.db.cursor()
+        # 设置浏览器隐藏
+        chromeOp = webdriver.ChromeOptions()
+        chromeOp.add_argument("headless")
+        self.driver = webdriver.Chrome(chrome_options=chromeOp)
+        # self.driver = webdriver.Chrome()
+
         print("正在打开浏览器。。")
         self.driver.get(self.url)
+
         print("全局等待时间设置为3秒")
         self.driver.implicitly_wait(3)
+
         print("窗口最大化")
         self.driver.maximize_window()
 
     def input_keyword(self, keyword):
-        print("输入的关键词为{}".format(keyword))
         """
         输入关键词
         :param keyword: 关键词
         """
+        print("输入的关键词为{}".format(keyword))
         key_input = self.driver.find_element_by_id("txt_SearchText")
         key_input.send_keys(keyword)
         key_input.send_keys(Keys.RETURN)
 
     def crawl(self):
         """
-        爬取列表信息,并存储到CSV文件中
+        爬取列表信息
         """
-        f = open("../csv/articlelist.csv", 'a+', encoding='utf-8', newline="")
-        f_re_aa = open('../csv/re_article_author.csv', 'a+', encoding='utf-8', newline="")
-        fcsv = csv.writer(f)
-        fcsv_re_aa = csv.writer(f_re_aa)
 
         # 获取文章列表行
         article_table = self.driver.find_element_by_class_name("result-table-list")
         article_table = article_table.find_element_by_tag_name("tbody")
         article_list = article_table.find_elements_by_tag_name("tr")
-
+        i = 1
         for article in article_list:
             # 保存来源
-            source = article.find_element_by_class_name("source").text
-            # print('文献来源为{}'.format(source))
+            source_tag = article.find_element_by_class_name("source")
+            source = source_tag.text
+            try:
+                a_tag = source_tag.find_element_by_tag_name('a')
+                url_source = a_tag.get_attribute('href') if a_tag else ''
+                # print(i, source, url_source)
+            except:
+                continue
 
             # 文献类型
             article_type = article.find_element_by_class_name("data").text
@@ -73,16 +80,15 @@ class ArticleList:
             elif article_type.find('外文') != -1:
                 """判断是否为外文期刊"""
                 print('发现外文期刊')
-                pass
+                continue
             else:
                 url_article = '#'
-
-            # print(url_article)
+                continue
 
             # 保存作者列表
             author_list = []
             author_list_a = article.find_element_by_class_name("author").find_elements_by_tag_name("a")
-            # 只有一个作者，作者可能无连接
+            # 只有一个作者，作者可能无链接
             if len(author_list_a) == 0:
                 author_name = article.find_element_by_class_name("author").text
                 try:
@@ -90,9 +96,23 @@ class ArticleList:
                         'a').get_attribute('href')
                 except NoSuchElementException:
                     author_href = '#'
+                if author_href != '#' and author_name:
+                    author_href = author_href_to_url(author_href)
+                    # print(author_name, author_href)
+                    insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
+                        url_article, author_href)
+                    try:
+                        # 执行sql语句
+                        self.curr.execute(insert_aa)
+                        # 提交到数据库执行
+                        self.db.commit()
+                        print('【成功】文献作者\t{}---{} 插入mysql'.format(name, author_name))
+                    except:
+                        # 如果发生错误则回滚
+                        self.db.rollback()
+                        print('【异常】文献作者\t{}---{} 插入异常'.format(name, author_name))
+
                 d = {'name': author_name, 'href': author_href}
-                if author_href != '#':
-                    fcsv_re_aa.writerow((url_article, author_href))
                 author_list.append(d)
 
             # 包含多个作者
@@ -102,25 +122,30 @@ class ArticleList:
                     author_href = author_a.get_attribute('href')
                 except NoSuchElementException:
                     author_href = '#'
-                d = {'name': author_name, 'href': author_href}
-                if not author_name:
-                    print('姓名为空')
                 if author_href != '#' and author_name:
                     author_href = author_href_to_url(author_href)
-                    fcsv_re_aa.writerow((url_article, author_href))
-                if author_name:
-                    print(author_name, author_href)
+                    # print(author_name, author_href)
+                    insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
+                        url_article, author_href)
+                    try:
+                        # 执行sql语句
+                        self.curr.execute(insert_aa)
+                        # 提交到数据库执行
+                        self.db.commit()
+                        print('【成功】文献作者\t{}---{}插入mysql'.format(name, author_name))
+                    except:
+                        # 如果发生错误则回滚
+                        self.db.rollback()
+                        print('【异常】文献作者\t{}---{}插入异常'.format(name, author_name))
+                d = {'name': author_name, 'href': author_href}
                 author_list.append(d)
-            # print(author_list)
 
             # 发表时间
             date = article.find_element_by_class_name("date").text
+            i += 1
 
-            fcsv.writerow((name, author_list, source, date, article_type))
-            # print("【{}】{}----存储完成！".format(name, author_list))
-
-        print("爬取完成，关闭文件，关闭驱动")
-        f.close()
+        print("爬取完成，关闭数据库，关闭驱动")
+        self.db.close()
         self.driver.close()
 
     def click_relevant(self):
@@ -142,5 +167,5 @@ class ArticleList:
 
 if __name__ == '__main__':
     a = ArticleList()
-    a.input_keyword("知识图谱")
+    a.input_keyword("人工智能")
     a.crawl()
