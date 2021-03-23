@@ -20,3 +20,15 @@ def author_href_to_url(href):
     skey = m2.group(0).replace('skey=', '')
     code = m3.group(0).replace('acode=', '')
     return 'dbcode={}sfield=au&skey={}code={}'.format(dbcode, skey, code)
+
+
+def source_href(href):
+    """
+    爬取到的格式为 https://kns.cnki.net/KNS8/Navi?DBCode=CJFD&BaseID=HXYK ，转化成 DBCode=CJFD&BaseID=HXYK
+    :param href:
+    :return:
+    """
+    m = re.search(r'DBC.*', href)
+    return m.group(0)
+
+
