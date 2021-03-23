@@ -6,7 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from myUtils.urlUtil import author_href_to_url
+from myUtils.urlUtil import author_href_to_url, source_href
 
 
 class ArticleList:
@@ -61,6 +61,7 @@ class ArticleList:
             try:
                 a_tag = source_tag.find_element_by_tag_name('a')
                 url_source = a_tag.get_attribute('href') if a_tag else ''
+                url_source = source_href(url_source)
                 # print(i, source, url_source)
             except:
                 continue
@@ -69,11 +70,11 @@ class ArticleList:
             article_type = article.find_element_by_class_name("data").text
 
             # 保存文章标题
-            name_tag = article.find_element_by_class_name("name").find_element_by_tag_name("a")
-            name = name_tag.text
+            title_tag = article.find_element_by_class_name("name").find_element_by_tag_name("a")
+            title = title_tag.text
 
             # 获取文章url
-            url_article = name_tag.get_attribute('href')
+            url_article = title_tag.get_attribute('href')
             match = re.search(r'FileName=(.*?)&DbName=(.*?)&DbCode=(.*?)&', url_article)
             if match:
                 url_article = match.group(0)
@@ -85,8 +86,10 @@ class ArticleList:
                 url_article = '#'
                 continue
 
-            # 保存作者列表
-            author_list = []
+            insert_as = "insert into re_article_source(url_article,url_source) values ('{}','{}')".format(
+                url_article, url_source)
+            self.execute_sql(insert_as, '文献来源\t{}'.format(title))
+
             author_list_a = article.find_element_by_class_name("author").find_elements_by_tag_name("a")
             # 只有一个作者，作者可能无链接
             if len(author_list_a) == 0:
@@ -101,19 +104,7 @@ class ArticleList:
                     # print(author_name, author_href)
                     insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
                         url_article, author_href)
-                    try:
-                        # 执行sql语句
-                        self.curr.execute(insert_aa)
-                        # 提交到数据库执行
-                        self.db.commit()
-                        print('【成功】文献作者\t{}---{} 插入mysql'.format(name, author_name))
-                    except:
-                        # 如果发生错误则回滚
-                        self.db.rollback()
-                        print('【异常】文献作者\t{}---{} 插入异常'.format(name, author_name))
-
-                d = {'name': author_name, 'href': author_href}
-                author_list.append(d)
+                    self.execute_sql(insert_aa, '{}---{}'.format(title, author_name))
 
             # 包含多个作者
             for author_a in author_list_a:
@@ -127,21 +118,14 @@ class ArticleList:
                     # print(author_name, author_href)
                     insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
                         url_article, author_href)
-                    try:
-                        # 执行sql语句
-                        self.curr.execute(insert_aa)
-                        # 提交到数据库执行
-                        self.db.commit()
-                        print('【成功】文献作者\t{}---{}插入mysql'.format(name, author_name))
-                    except:
-                        # 如果发生错误则回滚
-                        self.db.rollback()
-                        print('【异常】文献作者\t{}---{}插入异常'.format(name, author_name))
-                d = {'name': author_name, 'href': author_href}
-                author_list.append(d)
+                    self.execute_sql(insert_aa, '文献作者\t{}---{}'.format(title, author_name))
 
             # 发表时间
             date = article.find_element_by_class_name("date").text
+            insert_a = "insert into article_ex(url,publish_date,type) values ('{}','{}','{}')".format(
+                url_article, date, article_type)
+            self.execute_sql(insert_a, '日期类型\t{}'.format(title))
+
             i += 1
 
         print("爬取完成，关闭数据库，关闭驱动")
@@ -163,6 +147,23 @@ class ArticleList:
         # nextPage = self.driver.find_element_by_xpath('//*[@id="PageNext"]')
         # ActionChains(self.driver).click(nextPage).perform()
         ActionChains(self.driver).send_keys(Keys.RIGHT).perform()
+
+    def execute_sql(self, sql, message=''):
+        """
+        执行SQL语句
+        :param sql: 要执行的sql语句
+        :param message: 提示消息
+        """
+        try:
+            # 执行sql语句
+            self.curr.execute(sql)
+            # 提交到数据库执行
+            self.db.commit()
+            print('【成功】{}'.format(message))
+        except:
+            # 如果发生错误则回滚
+            self.db.rollback()
+            print('【异常】{}'.format(message))
 
 
 if __name__ == '__main__':
