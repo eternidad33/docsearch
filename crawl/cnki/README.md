@@ -24,7 +24,7 @@ URL获取过程和**期刊文献**类似
 
 ### 作者详情URL解析
 
-例如，[崔员宁]()
+例如，[崔员宁](https://kns.cnki.net/kcms/detail/knetsearch.aspx?dbcode=CAPJ&sfield=au&skey=%e5%b4%94%e5%91%98%e5%ae%81&code=43931005)
 
 可进入详情的链接，`https://kns.cnki.net/kcms/detail/knetsearch.aspx?dbcode=CAPJ&sfield=au&skey=%e5%b4%94%e5%91%98%e5%ae%81&code=43931005`
 
@@ -52,15 +52,9 @@ def href_to_url(href):
     return '{}dbcode={}sfield=au&skey={}code={}'.format(baseURL, dbcode, skey, code)
 ```
 
-### 作者所在学校URL解析
+### 文献来源URL
 
-
-
-
-
-### 文献来源URL详情
-
-
+通过selenium获取到的可直接点击进入详情，无需修改
 
 ## 重构
 
