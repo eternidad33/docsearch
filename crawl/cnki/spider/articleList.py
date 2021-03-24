@@ -39,7 +39,7 @@ class ArticleList:
         输入关键词
         :param keyword: 关键词
         """
-        print("输入的关键词为{}".format(keyword))
+        print("输入的关键词为：{}".format(keyword))
         key_input = self.driver.find_element_by_id("txt_SearchText")
         key_input.send_keys(keyword)
         key_input.send_keys(Keys.RETURN)
@@ -100,7 +100,7 @@ class ArticleList:
                 except NoSuchElementException:
                     author_href = '#'
                 if author_href != '#' and author_name:
-                    author_href = author_href_to_url(author_href)
+                    author_href = author_href_to_url(author_href,author_name)
                     # print(author_name, author_href)
                     insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
                         url_article, author_href)
@@ -114,11 +114,14 @@ class ArticleList:
                 except NoSuchElementException:
                     author_href = '#'
                 if author_href != '#' and author_name:
-                    author_href = author_href_to_url(author_href)
-                    # print(author_name, author_href)
-                    insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
-                        url_article, author_href)
-                    self.execute_sql(insert_aa, '文献作者\t{}---{}'.format(title, author_name))
+                    try:
+                        author_href = author_href_to_url(author_href,author_name)
+                        # print(author_name, author_href)
+                        insert_aa = "insert into re_article_author(url_article,url_author) values ('{}','{}')".format(
+                            url_article, author_href)
+                        self.execute_sql(insert_aa, '文献作者\t{}---{}'.format(title, author_name))
+                    except Exception as e:
+                        print("【失败】链接", e)
 
             # 发表时间
             date = article.find_element_by_class_name("date").text
@@ -168,5 +171,6 @@ class ArticleList:
 
 if __name__ == '__main__':
     a = ArticleList()
-    a.input_keyword("人工智能")
+    s = input('请输入要查询的关键字：')
+    a.input_keyword(s)
     a.crawl()

@@ -9,10 +9,9 @@ def save_article_mysql():
     db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnki', port=3306, charset='utf8')
     curr = db.cursor()
     select_article_sql = 'select DISTINCT url_article from re_article_author;'
-    # 获取所有文章
-    curr.execute(select_article_sql)
     articles = []
     try:
+        # 获取所有文章
         curr.execute(select_article_sql)
         result = curr.fetchall()
         for row in result:
@@ -58,38 +57,67 @@ def save_author_mysql():
             urls.append(url_author)
     except:
         print("不能获取到数据")
+
+    c1, c2, c3 = 0, 0, 0
     for url in urls:
         author_spider = Author(url)
-        # 判断是否存在信息
+        # 判断是否存在信息，不存在就跳过
         if not author_spider.hasInfo():
             continue
-        # TODO 存储基本信息
-        sql1 = ''
+        name, major, sum_publish, sum_download, fields = author_spider.spBasic()
+        sql1 = "insert into author(url,name, major, sum_publish, sum_download, fields) values('{}','{}','{}','{}'," \
+               "'{}','{}')".format(url, name, major, sum_publish, sum_download, fields)
         try:
             curr.execute(sql1)
             db.commit()
+            c1 += 1
+            print('【成功】{}存储完成'.format(name))
         except Exception as e:
             print('存取异常,{}'.format(e))
             db.rollback()
 
-        # TODO 存储师生关系
-        sql2 = ''
-        try:
-            curr.execute(sql2)
-            db.commit()
-        except Exception as e:
-            print('存取异常,{}'.format(e))
-            db.rollback()
+        # 存储师生关系
+        author_spider.crawl_teacher()
+        author_spider.crawl_students()
+        if author_spider.hasStudent:
+            for surl in author_spider.students_url:
+                sql2 = "insert into re_teacher_student(url_teacher,url_student) values('{}','{}')".format(url, surl)
+                try:
+                    curr.execute(sql2)
+                    db.commit()
+                    print('【成功】师生关系 {} 存储完成'.format(name))
+                    c2 += 1
+                except Exception as e:
+                    print('存取异常,{}'.format(e))
+                    db.rollback()
+        if author_spider.hasTeacher:
+            for turl in author_spider.teachers_url:
+                sql3 = "insert into re_teacher_student(url_teacher,url_student) values('{}','{}')".format(turl, url)
+                try:
+                    curr.execute(sql3)
+                    db.commit()
+                    print('【成功】师生关系 {} 存储完成'.format(name))
+                    c2 += 1
+                except Exception as e:
+                    print('存取异常,{}'.format(e))
+                    db.rollback()
 
-        # TODO 存储作者所在学校url
-        sql3 = ''
+        # 存储作者所在学校url
+        school_url = author_spider.spSchool()
+        sql3 = "insert into re_author_school(url_author,url_school) values('{}','{}')".format(url, school_url)
         try:
             curr.execute(sql3)
             db.commit()
+            c3 += 1
         except Exception as e:
             print('存取异常,{}'.format(e))
             db.rollback()
 
+        author_spider.close_driver()
+
+    print('成功存储{}个作者'.format(c1))
+    print('成功存储{}个师生关系'.format(c2))
+    print('成功存储{}个所在学校关系'.format(c3))
     db.close()
 
 
@@ -107,3 +135,6 @@ def save_school():
     """存储作者所在学校的详情"""
     # TODO 学校详情
     pass
+
+
+save_author_mysql()
