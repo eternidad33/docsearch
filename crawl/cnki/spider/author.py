@@ -15,14 +15,13 @@ class Author:
     teacher = ''
     students = []
 
-    def __init__(self,
-                 url="https://kns.cnki.net/kcms/detail/knetsearch.aspx?dbcode=CMFD&sfield=au&skey=%e8%82%96%e7%9b%b8%e6" \
-                     "%ac%a3&code=42962547&v=XuuQ%25mmd2Fi3qrWQVFULCjpwXoY%25mmd2BbZqrZ3W7KIDLXBs226SGLHyEOO6LJv4PgXwW" \
-                     "%25mmd2BwxsG "):
+    def __init__(self,url="dbcode=CAPJ&sfield=au&skey=%e6%9d%a8%e7%92%90&code=36280603"):
+        self.url = url
+        new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?' + url
         print("开始爬取作者信息")
         self.driver = webdriver.Chrome()
         print("正在打开浏览器。。")
-        self.driver.get(url)
+        self.driver.get(new_url)
         print("全局等待时间设置为3秒")
         self.driver.implicitly_wait(3)
         print("窗口最大化")
@@ -122,6 +121,9 @@ class Author:
                         self.articles, self.teacher, self.students))
         self.close_driver()
 
+    def hasInfo(self):
+        """判断页面是否存在信息"""
+        pass
 
 if __name__ == '__main__':
     # url = "https://kns.cnki.net/kcms/detail/knetsearch.aspx?dbcode=CAPJ&sfield=au&skey=朱艳辉&code=11283028"

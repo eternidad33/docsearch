@@ -144,7 +144,7 @@ class School(Source):
 
 class Newspaper(Source):
     """文献来源为报纸"""
-    # Todo 爬取文献来源为报纸的信息
+    # TODO 爬取文献来源为报纸的信息
     pass
 
 
