@@ -15,8 +15,6 @@ class Author:
     sum_download = ''
     fields = ''
     articles = []
-    teachers_url = []
-    students_url = []
     hasTeacher = False
     hasStudent = False
 
@@ -25,16 +23,18 @@ class Author:
         new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?' + url
         # print("开始爬取作者信息")
         # 设置浏览器隐藏
-        # chromeOp = webdriver.ChromeOptions()
-        # chromeOp.add_argument("headless")
-        # self.driver = webdriver.Chrome(chrome_options=chromeOp)
-        self.driver = webdriver.Chrome()
+        chromeOp = webdriver.ChromeOptions()
+        chromeOp.add_argument("headless")
+        self.driver = webdriver.Chrome(chrome_options=chromeOp)
+        # self.driver = webdriver.Chrome()
         # print("正在打开浏览器。。")
         self.driver.get(new_url)
         # print("全局等待时间设置为3秒")
         self.driver.implicitly_wait(3)
         # print("窗口最大化")
         self.driver.maximize_window()
+        self.teachers_url = []
+        self.students_url = []
 
     def crawl_main(self):
         """
