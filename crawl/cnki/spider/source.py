@@ -1,4 +1,3 @@
-import csv
 import re
 
 import requests
@@ -13,8 +12,8 @@ class Journal(Source):
     """文献来源为期刊"""
     name = ''
     name_en = ''
-    journals = []
-    basic_info = []
+    journals = ''
+    basic_info = ''
     album = ''
     special = ''
     count_publish = ''
@@ -49,8 +48,10 @@ class Journal(Source):
             print('【无】本期刊 {} 无收录机构'.format(self.name))
             return
         journals_tag = journalType_tag.find_all('span')
+        l = []
         for journal_tag in journals_tag:
-            self.journals.append(journal_tag.text)
+            l.append(journal_tag.text)
+        self.journals = str(l)
         print('【收录机构】爬取完成！')
 
     def crawl_basic_info(self):
@@ -61,9 +62,11 @@ class Journal(Source):
             return
         li1 = ul.find_all('li')[1]
         ps = li1.find_all('p')
+        l = []
         for p in ps:
-            self.basic_info.append(p.text)
+            l.append(p.text)
             # print(p.text)
+        self.basic_info = str(l)
         print('【基本信息】爬取完成！')
 
     def crawl_publish(self):
@@ -77,18 +80,27 @@ class Journal(Source):
         try:
             publish_tag = special_tag.parent.next_sibling.next_sibling.find('span')
             self.count_publish = publish_tag.text if publish_tag else ''
-            print('【出版文献量】{0} 爬取完成！\n'.format(self.count_publish))
+            print('【出版文献量】{0} 爬取完成！'.format(self.count_publish))
         except:
-            print('【异常】爬取出版文献量异常！url为{}\n'.format(self.url))
+            print('【异常】爬取出版文献量异常！url为{}'.format(self.url))
 
-    def save_csv(self, file=open('../csv/source_journal.csv', 'a+', encoding='utf-8', newline="")):
+    # def save_csv(self, file=open('../csv/source_journal.csv', 'a+', encoding='utf-8', newline="")):
+    #     self.crawl_name()
+    #     self.crawl_journals()
+    #     self.crawl_basic_info()
+    #     self.crawl_publish()
+    #     f_csv = csv.writer(file)
+    #     f_csv.writerow(
+    #         (self.name, self.name_en, self.journals, self.basic_info, self.album, self.special, self.count_publish))
+
+    def spider(self):
         self.crawl_name()
         self.crawl_journals()
         self.crawl_basic_info()
         self.crawl_publish()
-        f_csv = csv.writer(file)
-        f_csv.writerow(
-            (self.name, self.name_en, self.journals, self.basic_info, self.album, self.special, self.count_publish))
+        journals = re.sub(r"'", '"', self.journals)
+        basic_info = re.sub(r"'", '"', self.basic_info)
+        return self.url, self.name, self.name_en, journals, basic_info, self.album, self.special, self.count_publish
 
 
 class School(Source):
@@ -133,15 +145,15 @@ class School(Source):
         self.count_articles = ps1_tag[0].span.text if ps1_tag[0].span else ''
         self.count_refer = ps1_tag[1].span.text if ps1_tag[1].span else ''
         self.count_downloads = ps1_tag[0].span.text if ps1_tag[0].span else ''
-        print("【出版信息】爬取完成！\n")
+        print("【出版信息】爬取完成！")
 
-    def save_csv(self, file=open('../csv/source_school.csv', 'a+', encoding='utf-8', newline="")):
-        self.crawl_name()
-        self.crawl_base_info()
-        self.crawl_publish_info()
-        f_csv = csv.writer(file)
-        f_csv.writerow(
-            (self.name, self.name_used, self.region, self.count_articles, self.count_refer, self.count_downloads))
+    # def save_csv(self, file=open('../csv/source_school.csv', 'a+', encoding='utf-8', newline="")):
+    #     self.crawl_name()
+    #     self.crawl_base_info()
+    #     self.crawl_publish_info()
+    #     f_csv = csv.writer(file)
+    #     f_csv.writerow(
+    #         (self.name, self.name_used, self.region, self.count_articles, self.count_refer, self.count_downloads))
 
 
 class Newspaper(Source):
@@ -159,7 +171,7 @@ if __name__ == '__main__':
     js = [j1, j2, j3, j4, j5]
     for j in js:
         journal = Journal(j)
-        journal.save_csv()
+        # journal.save_csv()
 
     s1 = base_url + 'DBCode=CDMD&BaseID=GBJKU'
     s2 = base_url + 'DBCode=CDMD&BaseID=GNJDC'
@@ -169,4 +181,4 @@ if __name__ == '__main__':
     ss = [s1, s2, s3, s4, s5]
     for s in ss:
         s = School(s)
-        s.save_csv()
+        # s.save_csv()

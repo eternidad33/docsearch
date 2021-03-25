@@ -7,6 +7,7 @@ import pymysql
 from crawl.cnki.spider.article import Article
 from crawl.cnki.spider.author import Author
 from crawl.cnki.spider.school import School
+from crawl.cnki.spider.source import Journal
 
 
 def save_article_mysql():
@@ -158,7 +159,6 @@ def save_school():
     res = curr.fetchone()
     print("共需要爬取的学校个数为：", res[0])
     urls = []
-    index, length = 0, 5
     try:
         sql1 = "SELECT DISTINCT url_school FROM re_author_school where url_school not in (SELECT url from school)"
         curr.execute(sql1)
@@ -190,17 +190,50 @@ def save_school():
 def save_source_mysql():
     """存储文献来源
     判断文献类型，论文，期刊
-    论文存储到 source_school 表
     期刊存储到 source_journal 表
     """
-    # TODO 存储文献来源
-    pass
+    db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnki', port=3306, charset='utf8')
+    curr = db.cursor()
+    sqlc = "SELECT COUNT(DISTINCT url_source) FROM re_article_source WHERE url_source NOT IN ( SELECT url FROM source_journal )"
+    curr.execute(sqlc)
+    res = curr.fetchone()
+    print("共需要爬取的文献来源个数为：", res[0])
+    urls = []
+    try:
+        sql1 = "SELECT DISTINCT url_source FROM re_article_source WHERE url_source NOT IN ( SELECT url FROM source_journal )"
+        curr.execute(sql1)
+        result = curr.fetchall()
+        for row in result:
+            url_school = row[0]
+            urls.append(url_school)
+    except:
+        print("不能获取到数据")
+    c = 0
+    for url in urls:
+        print('正在爬取：https://kns.cnki.net/KNS8/Navi?' + url)
+        journal_spider = Journal(url)
+        url, name, name_en, journals, basic_info, album, special, count_publish = journal_spider.spider()
+        sql2 = "insert into source_journal(url, name, name_en, journals, basic_info, album, special, count_publish) " \
+               "values('{}','{}','{}','{}','{}','{}','{}','{}') ".format(url, name, name_en, journals, basic_info,
+                                                                         album, special, count_publish)
+        try:
+            curr.execute(sql2)
+            db.commit()
+            c += 1
+            print("【成功】期刊{}存储完成,已完成{}/{}\n".format(name, c, res[0]))
+        except Exception as e:
+            print('存取异常,{}'.format(e))
+            db.rollback()
+        # 随机等待1-3秒
+        rand = random.randint(1, 3)
+        time.sleep(rand)
 
 
 if __name__ == '__main__':
     start = time.time()
     # save_author_mysql()
-    save_school()
+    # save_school()
+    save_source_mysql()
     end = time.time()
     t = end - start
     m, s = divmod(t, 60)
