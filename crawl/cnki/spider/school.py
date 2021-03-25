@@ -11,12 +11,11 @@ class School:
     region = ''
     official_website = ''
 
-    def __init__(self,
-                 url='https://kns.cnki.net/kcms/detail/knetsearch.aspx?sfield=in&skey=%E6%B2%B3%E5%8C%97%E5%A4%A7%E5'
-                     '%AD%A6&code=0106010'):
+    def __init__(self, url='sfield=in&skey=北京大学&code=0038515'):
         self.url = url
+        new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?' + url
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
-        req = requests.get(url, headers=headers)
+        req = requests.get(new_url, headers=headers)
         self.soup = BeautifulSoup(req.text, 'html.parser')
 
     def crawl(self):
@@ -27,12 +26,17 @@ class School:
         rowall = self.soup.find('div', class_='rowall')
 
         # 获取曾用名，地域，网址
-        name_used_span = rowall.find('span', string=re.compile('曾用名'))
-        region_span = rowall.find('span', string=re.compile('地域'))
-        official_website_span = rowall.find('span', string=re.compile('网址'))
-        self.name_used = name_used_span.next_sibling.text if name_used_span.next_sibling else ''
-        self.region = region_span.next_sibling.text if region_span.next_sibling else ''
-        self.official_website = official_website_span.next_sibling.text if official_website_span.next_sibling else ''
+        if rowall:
+            name_used_span = rowall.find('span', string=re.compile('曾用名'))
+            region_span = rowall.find('span', string=re.compile('地域'))
+            official_website_span = rowall.find('span', string=re.compile('网址'))
+            if name_used_span:
+                self.name_used = name_used_span.next_sibling.text if name_used_span.next_sibling else ''
+            if region_span:
+                self.region = region_span.next_sibling.text if region_span.next_sibling else ''
+            if official_website_span:
+                self.official_website = official_website_span.next_sibling.text if official_website_span.next_sibling else ''
+        return self.name, self.name_used, self.region, self.official_website
 
     def save_csv(self, f):
         self.crawl()
