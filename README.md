@@ -19,3 +19,54 @@
 3. 利用图数据库存储三元组知识；
 4. 利用知识图谱技术的SPARQL语言完成图数据的检索任务。
 
+## 爬虫
+
+- [x] 简单爬取单个页面信息
+
+- [x] 存入CSV
+
+- [x] mysql 存储数据关系
+
+  ![](https://gitee.com/eternidad33/picbed/raw/master/img/QQ截图20210325213045.jpg)
+
+- [ ] 多线程
+
+- [ ] 动态 ip，headers
+
+- [ ] 定时爬取
+
+## 数据分析
+
+- [x] 去掉 mysql 冗余的数据
+
+  ```sql
+  -- 删除重复数据并保留id最小的一个 
+  DELETE FROM author
+  WHERE NAME IN ( SELECT NAME 
+                 FROM ( SELECT NAME 
+                       FROM author 
+                       GROUP BY NAME 
+                       HAVING COUNT(NAME) > 1) a
+                )
+  -- 排除最小的id
+  AND id NOT IN (
+  	SELECT id
+  	FROM (SELECT min(id) AS id
+            FROM author 
+            GROUP BY NAME 
+            HAVING count(NAME) > 1 ) b
+  )
+  ```
+
+## 知识图谱
+
+- [x] 简单的知识图谱Demo
+
+  ![](https://gitee.com/eternidad33/picbed/raw/master/img/火狐截图_2021-03-25T13-11-34.549Z.png)
+
+- [ ] 检索系统
+
+## Web可视化
+
+- [ ] 简单的web界面
+- [ ] echarts 设计关系图
