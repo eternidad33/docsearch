@@ -69,3 +69,9 @@ E-R图如下所示：
 
 
 ![](https://gitee.com/eternidad33/picbed/raw/master/img/24ad65wd2a23s1d.png)
+
+**2021-3-25 知网爬虫完成，不过IP被限制了**
+
+![](https://gitee.com/eternidad33/picbed/raw/master/img/QQ截图20210325165828.jpg)
+
+
