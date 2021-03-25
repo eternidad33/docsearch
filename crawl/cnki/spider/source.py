@@ -19,9 +19,10 @@ class Journal(Source):
     special = ''
     count_publish = ''
 
-    def __init__(self, url='https://kns.cnki.net/KNS8/Navi?DBCode=cjfq&BaseID=JJWT'):
+    def __init__(self, url='DBCode=cjfq&BaseID=JJWT'):
         self.url = url
-        req = requests.get(self.url, headers=self.headers)
+        newurl = 'https://kns.cnki.net/KNS8/Navi?' + url
+        req = requests.get(newurl, headers=self.headers)
         soup = BeautifulSoup(req.text, 'html.parser')
         # 通过分析页面信息，要爬取的信息都存在dl标签中
         self.dl = soup.dl
@@ -99,9 +100,10 @@ class School(Source):
     count_refer = ''
     count_downloads = ''
 
-    def __init__(self, url='https://kns.cnki.net/KNS8/Navi?DBCode=CDMD&BaseID=GHEBU'):
+    def __init__(self, url='DBCode=CDMD&BaseID=GHEBU'):
         self.url = url
-        req = requests.get(self.url, headers=self.headers)
+        new_url = 'https://kns.cnki.net/KNS8/Navi?' + url
+        req = requests.get(new_url, headers=self.headers)
         soup = BeautifulSoup(req.text, 'html.parser')
         # 通过分析页面信息，要爬取的信息都存在dd标签中
         self.dd = soup.dd
@@ -143,28 +145,27 @@ class School(Source):
 
 
 class Newspaper(Source):
-    """文献来源为报纸"""
-    # TODO 爬取文献来源为报纸的信息
+    """文献来源为报纸，DBcode=ccnd"""
     pass
 
 
 if __name__ == '__main__':
-    base_url = 'https://kns.cnki.net'
-    j1 = base_url + '/kns8/Navi?DBCode=CJFD&BaseID=HBYU'
-    j2 = base_url + '/kns8/Navi?DBCode=CJFD&BaseID=DADY'
-    j3 = base_url + '/kns8/Navi?DBCode=CJFD&BaseID=CRJY'
-    j4 = base_url + '/KNS8/Navi?DBCode=CJFD&BaseID=ZGSM'
-    j5 = base_url + '/KNS8/Navi?DBCode=CJFD&BaseID=XDSM'
+    base_url = 'https://kns.cnki.net/KNS8/Navi?'
+    j1 = base_url + 'DBCode=CJFD&BaseID=HBYU'
+    j2 = base_url + 'DBCode=CJFD&BaseID=DADY'
+    j3 = base_url + 'DBCode=CJFD&BaseID=CRJY'
+    j4 = base_url + 'DBCode=CJFD&BaseID=ZGSM'
+    j5 = base_url + 'DBCode=CJFD&BaseID=XDSM'
     js = [j1, j2, j3, j4, j5]
     for j in js:
         journal = Journal(j)
         journal.save_csv()
 
-    s1 = base_url + '/KNS8/Navi?DBCode=CDMD&BaseID=GBJKU'
-    s2 = base_url + '/KNS8/Navi?DBCode=CDMD&BaseID=GNJDC'
-    s3 = base_url + '/KNS8/Navi?DBCode=CDMD&BaseID=GHBGC'
-    s4 = base_url + '/KNS8/Navi?DBCode=CDMD&BaseID=GJLIN'
-    s5 = base_url + '/KNS8/Navi?DBCode=CDMD&BaseID=GKCGS'
+    s1 = base_url + 'DBCode=CDMD&BaseID=GBJKU'
+    s2 = base_url + 'DBCode=CDMD&BaseID=GNJDC'
+    s3 = base_url + 'DBCode=CDMD&BaseID=GHBGC'
+    s4 = base_url + 'DBCode=CDMD&BaseID=GJLIN'
+    s5 = base_url + 'DBCode=CDMD&BaseID=GKCGS'
     ss = [s1, s2, s3, s4, s5]
     for s in ss:
         s = School(s)
