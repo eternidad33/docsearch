@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'dark.css' %}">
+</head>
+
+<body data-layout="home">
+    <div id="curtain">
+        <header id="header">
+            <a class="icon icon-magi" href="" title="Magi" aria-label="Magi" target="_self">
+                <h1>Magi</h1>
+            </a>
+            <form id="search-form" action="/search" method="get" target="_self">
+                <div id="search-wrapper" data-focus="false">
+                    <div id="search-bar">
+                        <input id="search-input" name="q" type="search" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" maxlength="70" title="Magi 搜索" aria-label="搜索" placeholder="问题 / 关键词 / 表达式" required="" data-original="">
+                        <button id="search-clear" class="icon icon-clear" type="button"></button>
+                        <input id="search-submit" class="icon icon-submit" type="submit" value="">
+                    </div>
+                    <ol id="search-suggestions"></ol>
+                </div>
+            </form>
+        </header>
+    </div>
+    <script type="text/javascript" src="{% static 'main.js' %}"></script>
+</body>
+
+</html>
