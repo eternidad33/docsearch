@@ -1,0 +1,8 @@
+itemadapter==0.2.0
+Scrapy==2.4.1
+redis==3.5.3
+requests==2.25.1
+PyMySQL==1.0.2
+Django==3.2.2
+selenium==3.141.0
+beautifulsoup4==4.9.3
