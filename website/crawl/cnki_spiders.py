@@ -14,7 +14,7 @@ MYSQL_HOST = "127.0.0.1"
 MYSQL_PORT = 3306
 USERNAME = "root"
 PASSWORD = "123456"
-DATABASE = "cnki"
+DATABASE = "cnkidemo"
 
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
@@ -115,21 +115,21 @@ class KeyList:
         if url_article == '#':
             return False
 
-        # 作者url
-        author_list_a = article.find_element_by_class_name("author").find_elements_by_tag_name("a")
-        authors = []
-        for author_a in author_list_a:
-            # sfield=au&skey=原雯&code=45345959
-            name = author_a.text
-            name_url = "sfield=au&skey=" + name + "&code="
-            try:
-                href = author_a.get_attribute('href')
-                code = extractAuthorCode(href)
-                name_url = name_url + code
-                # 提取code
-                authors.append(name_url)
-            except NoSuchElementException:
-                authors.append('#')
+        # # 作者url
+        # author_list_a = article.find_element_by_class_name("author").find_elements_by_tag_name("a")
+        # authors = []
+        # for author_a in author_list_a:
+        #     # sfield=au&skey=原雯&code=45345959
+        #     name = author_a.text
+        #     name_url = "sfield=au&skey=" + name + "&code="
+        #     try:
+        #         href = author_a.get_attribute('href')
+        #         code = extractAuthorCode(href)
+        #         name_url = name_url + code
+        #         # 提取code
+        #         authors.append(name_url)
+        #     except NoSuchElementException:
+        #         authors.append('#')
 
         # 刊名，链接
         source = article.find_element_by_class_name('source').find_element_by_tag_name('a')
@@ -203,7 +203,7 @@ class CrawlBase:
     def crawl(self):
         pass
 
-    def store(self, curr):
+    def store(self, db):
         pass
 
 
@@ -217,6 +217,7 @@ class Article(CrawlBase):
     def __init__(self, url="FileName=XAJD20210319000&DbName=CAPJLAST&DbCode=CAPJ&"):
         super().__init__()
         self.url = url
+        # headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"}
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
         req = requests.get("https://kns.cnki.net/kcms/detail/detail.aspx?" + url, headers=headers)
         soup = BeautifulSoup(req.text, 'html5lib')
@@ -228,16 +229,33 @@ class Article(CrawlBase):
         """爬取文章详情页
         返回字典类型数据，链接url，标题title，摘要summary，关键词keys，作者authors，发布日期date
         """
-        # todo 爬取文章详情
         # 获取文章标题
         item = {'title': self.doc.h1.text, 'url': self.url}
 
         author_list_tag = self.doc.find('h3', id="authorpart")  # 作者列表
         authors = []
-        for author_tag in author_list_tag:
-            url = ""
-            authors.append(url)
-            # name = re.sub(r'\d+,\d+', '', author_tag.text)
+        if not author_list_tag:
+            pass
+        else:
+            for author_tag in author_list_tag:
+                try:
+                    # 作者可能没有href
+                    href = author_tag.a.get('onclick')
+                    # name = re.sub(r'\d+,\d+', '', author_tag.text)
+                    url = auToUrl(href)
+                    authors.append(url)
+                except:
+                    continue
+        if 'CMFD' in self.url or 'CDFD' in self.url:
+            # 论文的作者只有一个
+            try:
+                a_tag = self.doc.find('a', class_='author')
+                href = a_tag.get('onclick')
+                url = auToUrl(href)
+                authors.append(url)
+            except:
+                # 作者无链接
+                pass
         item['authors'] = authors
 
         summary_tag = self.doc.find('span', id='ChDivSummary')
@@ -254,17 +272,27 @@ class Article(CrawlBase):
             item['keys'] = str(key_list)
         else:
             item['keys'] = ''
-
-        # 从redis中获取发布日期
-
+        item['date'] = self.r.get(self.url)
         self.r.close()
         return item
 
-    def store(self, curr):
-        """存储数据
-        表：article，re_article_author
-        """
+    def store(self, db):
+        """存储数据表：article，re_article_author"""
         item = self.crawl()
+        url = item['url']
+        title = item['title']
+        summary = item['summary']
+        keywords = re.sub(r"\[|\]|'", '', item['keys'])
+        date = item['date'] if item['date'] else '2020-01-01'
+        sql_a = "insert into article(url, title, summary, keywords, date) VALUES ('{}','{}','{}','{}','{}')".format(url,
+                                                                                                                    title,
+                                                                                                                    summary,
+                                                                                                                    keywords,
+                                                                                                                    date)
+        executeSql(db, sql_a)
+        for au in item['authors']:
+            sql_re_aa = "insert into re_article_author(url_article, url_author) VALUES ('{}','{}')".format(url, au)
+            executeSql(db, sql_re_aa)
 
 
 class Author(CrawlBase):
@@ -378,7 +406,7 @@ class Author(CrawlBase):
             print("进入框架frame10异常！")
         return res
 
-    def store(self, curr):
+    def store(self, db):
         """存储数据
         表：author，re_article_author，re_author_organization，re_teacher_student
         """
@@ -391,15 +419,72 @@ class Source(CrawlBase):
     关系：文献链接
     """
 
-    # todo 爬取文献来源详情
     def __init__(self, url):
         super().__init__()
+        self.url = url
+        newurl = 'https://kns.cnki.net/KNS8/Navi?' + url
+        headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"}
+        req = requests.get(newurl, headers=headers)
+        soup = BeautifulSoup(req.text, 'html.parser')
+        # 通过分析页面信息，要爬取的信息都存在dl标签中
+        self.dl = soup.dl
 
     def crawl(self):
-        pass
+        item = {'url': self.url}
+        if not self.dl:
+            print('【dl标签异常】无法获取dl标签')
+            return
+        name_tag = self.dl.h3
+        name = name_tag.text if name_tag else ''
 
-    def store(self, curr):
-        pass
+        name_en_tag = name_tag.p
+        name_en = name_en_tag.text if name_en_tag else ''
+        temp = re.sub(r'\s', '', name_en) if name_en else ''
+        item['name'] = re.sub(r'\s*|{}'.format(temp), '', name)
+        item['name'] = item['name'].replace(temp, '')
+        item['name'] = re.sub(r'\d*', '', item['name'])
+        item['en-name'] = name_en
+        uls = self.dl.findAll('ul')
+        if len(uls) == 2:
+            # 基本信息,出版概况
+            basic = uls[0].text
+            publish = uls[1].text
+            basic = re.sub(r'基本信息|\s*', '', basic)
+            publish = re.sub(r'出版概况|\s', '', publish)
+            item['basic'] = basic
+            item['publish'] = publish
+            item['evaluation'] = ''
+        elif len(uls) == 3:
+            # 基本信息，出版信息，评价信息
+            basic = uls[0].text
+            publish = uls[1].text
+            evaluation = uls[2].text
+            basic = re.sub(r'基本信息|\s*', '', basic)
+            publish = re.sub(r'出版信息|\s*', '', publish)
+            evaluation = re.sub(r'评价信息|\s*', '', evaluation)
+            item['basic'] = basic
+            item['publish'] = publish
+            item['evaluation'] = evaluation
+        else:
+            item['basic'] = ''
+            item['publish'] = ''
+            item['evaluation'] = ''
+
+        return item
+
+    def store(self, db):
+        item = self.crawl()
+        if not item:
+            return
+        url = item['url']
+        name = item['name']
+        basic = item['basic']
+        publish = item['publish']
+        evaluation = item['evaluation']
+        sql = "insert into source(url, name, basic_info, publish_info, evaluation) VALUES ('{}','{}','{}','{}','{}')".format(
+            url, name, basic, publish, evaluation)
+        executeSql(db, sql)
 
 
 class Organization(CrawlBase):
@@ -415,33 +500,70 @@ class Organization(CrawlBase):
     def crawl(self):
         pass
 
-    def store(self, curr):
+    def store(self, db):
         pass
 
 
-def getArticleUrls():
+def executeSql(db, sql):
+    """执行sql语句"""
+    try:
+        curr = db.cursor()
+        # 执行sql语句
+        curr.execute(sql)
+        # 提交到数据库执行
+        db.commit()
+        print('【成功】{}'.format(sql))
+    except Exception as e:
+        # 如果发生错误则回滚
+        db.rollback()
+        print('【异常】{}'.format(sql))
+
+
+def getArticleUrls(db):
     """获取未被爬取的文献链接"""
-    pass
+    # sql1 = "SELECT DISTINCT article.url FROM article LEFT JOIN re_article_author ON article.url=re_article_author.url_article WHERE re_article_author.url_article is NULL"
+    sql = 'SELECT DISTINCT re_article_source.url_article FROM re_article_source LEFT JOIN article ON re_article_source.url_article=article.url WHERE article.url is NULL'
+    curr = db.cursor()
+    curr.execute(sql)
+    urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    return urls
 
 
-def getAuthorsUrls():
+def getAuthorsUrls(db):
     """获取未被爬取的作者链接"""
     pass
 
 
-def getSourceUrls():
+def getSourceUrls(db):
     """获取未被爬取的文献来源链接"""
-    pass
+    # todo 有bug
+    sql = 'SELECT DISTINCT re_article_source.url_source FROM re_article_source LEFT JOIN source ON re_article_source.url_article=source.url WHERE source.url is NULL'
+    curr = db.cursor()
+    curr.execute(sql)
+    urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    return urls
 
 
 def getOrganizationUrls():
-    """获取未被爬取的文献来源链接"""
+    """获取未被爬取的作者所在机构链接"""
     pass
 
 
-def crawlArticle(urls):
+def crawlArticle(urls, db):
     """爬取未被爬取的文章"""
-    pass
+    print("需要爬取的文献个数为 {}".format(len(urls)))
+    for url in urls:
+        time.sleep(2)
+        article = Article(url)
+        # item = a.crawl()
+        article.store(db)
+        # print(item)
 
 
 def crawlAuthor(urls):
@@ -449,9 +571,13 @@ def crawlAuthor(urls):
     pass
 
 
-def crawlSource(urls):
+def crawlSource(urls, db):
     """爬取未被爬取的文献来源"""
-    pass
+    print("需要爬取的文献来源个数为 {}".format(len(urls)))
+    for url in urls:
+        time.sleep(2)
+        source = Source(url)
+        source.store(db)
 
 
 def crawlOrganization(urls):

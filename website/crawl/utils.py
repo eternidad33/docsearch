@@ -70,6 +70,27 @@ def lunwenToUrl(href):
     return res
 
 
+def auToUrl(href: str):
+    """提取skey和code
+    参数形式："\n                                  TurnPageToKnetV('au','王宁','33167488','-1jneb6HWg72-buRfraVc4ne9yN6-0WXaAnsWNgRfSH807I0dZ5EdylOABmJ53Mf');\n                                "
+    :return: str skey=王宁&code=33167488
+    """
+    try:
+        href = re.sub(r'\s', '', href)
+        start, end = href.index('(') + 1, href.index(')')
+        href = href[start:end]
+        # 'au','王宁','33167488','-1jneb6HWg72-buRfraVc4ne9yN6-0WXaAnsWNgRfSH807I0dZ5EdylOABmJ53Mf'
+        # 去掉',以，划分
+        href = href.replace("'", '')
+        ls = href.split(',')
+        if len(ls) > 2:
+            skey = ls[1]
+            code = ls[2]
+            return 'skey=' + skey + '&code=' + code
+    except Exception as e:
+        return '#'
+
+
 def extractAuthorCode(href):
     """抽取检索页作者href中的code值
     例如：https://kns.cnki.net/KNS8/Detail?sdb=CJFQ&sfield=%e4%bd%9c%e8%80%85&skey=%e8%b5%b5%e6%9a%be&scode=44906811&acode=44906811
@@ -100,5 +121,6 @@ def sourceToUrl(href):
 if __name__ == '__main__':
     sourcehref = 'https://kns.cnki.net/KNS8/Navi?DBCode=cjfq&BaseID=KQDX'
     lunwen_url = 'https://kns.cnki.net/KNS8/Detail?sfield=fn&QueryID=5&CurRec=1&DbCode=CDFD&dbname=CDFDLAST2021&filename=1021021170.nh'
-    a = lunwenToUrl(lunwen_url)
+    au = "\n                                  TurnPageToKnetV('au','王宁','33167488','-1jneb6HWg72-buRfraVc4ne9yN6-0WXaAnsWNgRfSH807I0dZ5EdylOABmJ53Mf');\n                                "
+    a = auToUrl(au)
     print(a)
