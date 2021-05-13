@@ -4,13 +4,13 @@ Navicat MySQL Data Transfer
 Source Server         : mysql
 Source Server Version : 50729
 Source Host           : localhost:3306
-Source Database       : cnki
+Source Database       : cnkidemo
 
 Target Server Type    : MYSQL
 Target Server Version : 50729
 File Encoding         : 65001
 
-Date: 2021-05-13 11:18:50
+Date: 2021-05-13 23:56:58
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -23,12 +23,12 @@ CREATE TABLE `article` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(255) NOT NULL COMMENT '链接',
   `title` varchar(255) NOT NULL COMMENT '标题',
-  `summary` varchar(255) DEFAULT NULL COMMENT '摘要',
+  `summary` mediumtext COMMENT '摘要',
   `keywords` varchar(255) DEFAULT NULL,
   `date` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '发表日期',
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=395 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for author
@@ -68,7 +68,7 @@ CREATE TABLE `re_article_author` (
   `url_author` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=591 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1185 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for re_article_source
@@ -80,7 +80,7 @@ CREATE TABLE `re_article_source` (
   `url_source` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=614 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for re_author_organization
@@ -119,4 +119,4 @@ CREATE TABLE `source` (
   `evaluation` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=149 DEFAULT CHARSET=utf8;
