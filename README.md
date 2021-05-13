@@ -11,7 +11,13 @@
 ```powershell
 文件夹介绍
 
-website 项目的代码
-source 资源文件
+website 代码
+resource 资源文件
 document 相关文档
 ```
+
+## 技术栈
+
+后端语言：Python 3.8.10
+数据库：neo4j 4.2.1，MySQL 5.7.29，Redis 3.2.100
+前端：magi.com
