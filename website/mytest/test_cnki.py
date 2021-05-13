@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
             k = KeyList()
             k.input_keyword(key)
             k.crawl_qikan()
-            # k.crawl_lunwen()
+            k.crawl_lunwen()
             flag = True
         except Exception as e:
             raise e

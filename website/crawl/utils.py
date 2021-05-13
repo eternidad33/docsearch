@@ -31,7 +31,7 @@ def stuToUrl(href):
 
 
 def articleToUrl(href):
-    """将关键词列表的文章url转换成相应的字符串
+    """将关键词列表的期刊文章url转换成相应的字符串
     例如：'https://kns.cnki.net/KNS8/Detail?sfield=fn&QueryID=5&CurRec=1&DbCode=CAPJ&dbname=CAPJDAY&filename=KQDX20210511000&urlid=51.1192.TK.20210511.1126.002&yx=Y'
     返回：dbcode=CAPJ&dbname=CAPJDAY&filename=KQDX20210511000&
     """
@@ -41,6 +41,26 @@ def articleToUrl(href):
         m0 = re.search(r"DBCODE=(.*?)&", href)
         m1 = re.search(r'DBNAME=(.*?)&', href)
         m2 = re.search(r'FILENAME=(.*?)&', href)
+        dbcode = m0.group(1)
+        dbname = m1.group(1)
+        filename = m2.group(1)
+        res = 'dbcode=' + dbcode + '&dbname=' + dbname + '&filename=' + filename
+    except Exception as e:
+        res = '#'
+    return res
+
+
+def lunwenToUrl(href):
+    """将关键词列表的论文url转换成相应的字符串
+    例如：'https://kns.cnki.net/KNS8/Detail?sfield=fn&QueryID=5&CurRec=1&DbCode=CDFD&dbname=CDFDLAST2021&filename=1021021170.nh'
+    返回：'dbcode=CDFD&dbname=CDFDLAST2021&filename=1021021170.NH'
+    """
+    res = '#'
+    try:
+        href = href.upper()
+        m0 = re.search(r"DBCODE=(.*?)&", href)
+        m1 = re.search(r'DBNAME=(.*?)&', href)
+        m2 = re.search(r'FILENAME=(.*)', href)
         dbcode = m0.group(1)
         dbname = m1.group(1)
         filename = m2.group(1)
@@ -78,6 +98,7 @@ def sourceToUrl(href):
 
 
 if __name__ == '__main__':
-    sourcehref= 'https://kns.cnki.net/KNS8/Navi?DBCode=cjfq&BaseID=KQDX'
-    s = sourceToUrl(sourcehref)
-    print(s)
+    sourcehref = 'https://kns.cnki.net/KNS8/Navi?DBCode=cjfq&BaseID=KQDX'
+    lunwen_url = 'https://kns.cnki.net/KNS8/Detail?sfield=fn&QueryID=5&CurRec=1&DbCode=CDFD&dbname=CDFDLAST2021&filename=1021021170.nh'
+    a = lunwenToUrl(lunwen_url)
+    print(a)

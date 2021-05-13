@@ -1,4 +1,3 @@
-import re
 import time
 
 import pymysql
@@ -9,7 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.keys import Keys
 
-from website.crawl.utils import organizationToUrl, stuToUrl, articleToUrl, extractAuthorCode, sourceToUrl
+from website.crawl.utils import *
 
 MYSQL_HOST = "127.0.0.1"
 MYSQL_PORT = 3306
@@ -71,6 +70,39 @@ class KeyList:
             time.sleep(2)
         print('成功爬取{}文献'.format(count))
 
+    def crawl_lunwen(self):
+        """爬取论文"""
+        try:
+            self.driver.find_element_by_xpath("/html/body/div[5]/div[1]/div/ul[1]/li[2]/a").click()
+        except Exception as e:
+            print(e)
+            return
+        time.sleep(2)
+        count = 0
+        for i in range(3):
+            # 获取表格行列表
+            article_table = self.driver.find_element_by_class_name("result-table-list")
+            article_table = article_table.find_element_by_tag_name("tbody")
+            article_list = article_table.find_elements_by_tag_name("tr")
+            for article in article_list:
+                if self._row_lunwen(article):
+                    count += 1
+            # 爬取论文行数据并存入mysql相应关系表
+            next_tag = self.driver.find_element_by_xpath('//*[@id="PageNext"]')
+            next_tag.click()
+            time.sleep(2)
+        print('成功爬取{}论文'.format(count))
+
+    def crawl(self, keyword):
+        """爬取本列表的期刊和论文"""
+        self.input_keyword(keyword)
+        self.crawl_qikan()
+        self.crawl_lunwen()
+        # 关闭资源
+        self.driver.close()
+        self.db.close()
+        self.r.close()
+
     def _row_qikan(self, article):
         """爬取期刊行"""
         # 保存文章标题
@@ -112,15 +144,39 @@ class KeyList:
         # 存储文献日期到redis
         self.r.set(url_article, publish_date)
 
-        # 文献作者关系存储到mysql表
-        for url_author in authors:
-            sql_re_aa = "insert into re_article_author(url_article,url_author) values('{}','{}')".format(url_article,
-                                                                                                         url_author)
-            self._execute_sql(sql_re_aa)
+        # # 文献作者关系存储到mysql表
+        # for url_author in authors:
+        #     sql_re_aa = "insert into re_article_author(url_article,url_author) values('{}','{}')".format(url_article,
+        #                                                                                                  url_author)
+        #     self._execute_sql(sql_re_aa)
 
         # 文献来源关系存储到mysql表中
         sql_re_as = "insert into re_article_source(url_article,url_source) values('{}','{}')".format(url_article,
                                                                                                      url_source)
+        self._execute_sql(sql_re_as)
+        return True
+
+    def _row_lunwen(self, article):
+        """爬取期刊行"""
+        # 保存文章标题
+        title_tag = article.find_element_by_class_name("name").find_element_by_tag_name("a")
+        title = title_tag.text
+
+        # 获取论文url
+        url_article = title_tag.get_attribute('href')
+        url_article = lunwenToUrl(url_article)
+        if url_article == '#':
+            return False
+
+        # 获取学校来源url
+        unit = article.find_element_by_class_name('unit').find_element_by_tag_name('a')
+        school_name = unit.text
+        source_href = unit.get_attribute('href')
+        url_school = sourceToUrl(source_href)
+
+        # 文献来源关系存储到mysql表中
+        sql_re_as = "insert into re_article_source(url_article,url_source) values('{}','{}')".format(url_article,
+                                                                                                     url_school)
         self._execute_sql(sql_re_as)
         return True
 
@@ -138,30 +194,6 @@ class KeyList:
             # 如果发生错误则回滚
             self.db.rollback()
             print('【异常】{}'.format(sql))
-
-    def crawl_lunwen(self):
-        """爬取论文"""
-        try:
-            self.driver.find_element_by_xpath("/html/body/div[5]/div[1]/div/ul[1]/li[2]/a").click()
-        except Exception as e:
-            print(e)
-            return
-        time.sleep(2)
-        for i in range(3):
-            # 爬取论文行数据并存入mysql相应关系表
-            next_tag = self.driver.find_element_by_xpath('//*[@id="PageNext"]')
-            next_tag.click()
-            time.sleep(2)
-
-    def crawl(self, keyword):
-        """爬取本列表的期刊和论文"""
-        self.input_keyword(keyword)
-        self.crawl_qikan()
-        self.crawl_lunwen()
-        # 关闭资源
-        self.driver.close()
-        self.db.close()
-        self.r.close()
 
 
 class CrawlBase:
@@ -240,6 +272,7 @@ class Author(CrawlBase):
     信息：主修专业，总发文量，总下载量
     关系：作者-文献，师生，所在机构，同机构的合作者
     """
+
     # todo 爬取作者详情页
     def __init__(self, url="dbcode=CAPJ&sfield=au&skey=%e6%9d%a8%e7%92%90&code=36280603"):
         super().__init__()
@@ -357,6 +390,7 @@ class Source(CrawlBase):
     信息：名称，基本信息，出版信息，评估信息
     关系：文献链接
     """
+
     # todo 爬取文献来源详情
     def __init__(self, url):
         super().__init__()
@@ -373,6 +407,7 @@ class Organization(CrawlBase):
     直接获取的信息：名称，曾用名，地域，官网
     机构主要作者,主办刊物
     """
+
     # todo 爬取作者机构详情
     def __init__(self, url):
         super().__init__()
