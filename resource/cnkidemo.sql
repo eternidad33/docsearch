@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50729
 File Encoding         : 65001
 
-Date: 2021-05-13 23:56:58
+Date: 2021-05-14 23:31:57
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -28,14 +28,14 @@ CREATE TABLE `article` (
   `date` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '发表日期',
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=395 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=741 DEFAULT CHARSET=utf8 COMMENT='文章';
 
 -- ----------------------------
 -- Table structure for author
 -- ----------------------------
 DROP TABLE IF EXISTS `author`;
 CREATE TABLE `author` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `major` varchar(255) DEFAULT NULL,
@@ -43,20 +43,22 @@ CREATE TABLE `author` (
   `sum_download` int(11) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=605 DEFAULT CHARSET=utf8 COMMENT='作者';
 
 -- ----------------------------
 -- Table structure for organization
 -- ----------------------------
 DROP TABLE IF EXISTS `organization`;
 CREATE TABLE `organization` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `used_name` varchar(255) DEFAULT NULL,
+  `region` varchar(255) DEFAULT NULL,
   `website` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8 COMMENT='组织';
 
 -- ----------------------------
 -- Table structure for re_article_author
@@ -68,7 +70,7 @@ CREATE TABLE `re_article_author` (
   `url_author` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1185 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1933 DEFAULT CHARSET=utf8 COMMENT='文献-作者';
 
 -- ----------------------------
 -- Table structure for re_article_source
@@ -80,7 +82,7 @@ CREATE TABLE `re_article_source` (
   `url_source` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=614 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=614 DEFAULT CHARSET=utf8 COMMENT='文献-来源';
 
 -- ----------------------------
 -- Table structure for re_author_organization
@@ -88,11 +90,11 @@ CREATE TABLE `re_article_source` (
 DROP TABLE IF EXISTS `re_author_organization`;
 CREATE TABLE `re_author_organization` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `url_zuthor` varchar(255) DEFAULT NULL,
+  `url_author` varchar(255) DEFAULT NULL,
   `url_organization` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4695 DEFAULT CHARSET=utf8 COMMENT='作者-组织';
 
 -- ----------------------------
 -- Table structure for re_teacher_student
@@ -104,7 +106,7 @@ CREATE TABLE `re_teacher_student` (
   `url_student` varchar(255) DEFAULT NULL,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=586 DEFAULT CHARSET=utf8 COMMENT='老师-学生';
 
 -- ----------------------------
 -- Table structure for source
@@ -116,7 +118,7 @@ CREATE TABLE `source` (
   `name` varchar(255) DEFAULT NULL,
   `basic_info` varchar(255) DEFAULT NULL,
   `publish_info` varchar(255) DEFAULT NULL,
-  `evaluation` varchar(255) DEFAULT NULL,
+  `evaluation` mediumtext,
   `status` int(1) unsigned zerofill DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=149 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=187 DEFAULT CHARSET=utf8 COMMENT='来源';
