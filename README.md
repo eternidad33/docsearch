@@ -18,6 +18,6 @@ document 相关文档
 
 ## 技术栈
 
-后端语言：Python 3.8.10
-数据库：neo4j 4.2.1，MySQL 5.7.29，Redis 3.2.100
-前端：magi.com
+- 后端语言：Python 3.8.10
+- 数据库：neo4j 4.2.1，MySQL 5.7.29，Redis 3.2.100
+- 前端：magi.com
