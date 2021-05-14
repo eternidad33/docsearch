@@ -20,6 +20,9 @@ DATABASE = "cnkidemo"
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 
+# 测试文件用
+PATH = './crawl/static/img/'
+
 
 class KeyList:
     """关键词列表
@@ -599,12 +602,70 @@ class Organization(CrawlBase):
     # todo 爬取作者机构详情
     def __init__(self, url):
         super().__init__()
+        self.url = url
+        new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?' + url
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+        req = requests.get(new_url, headers=headers)
+        self.soup = BeautifulSoup(req.text, 'html.parser')
 
     def crawl(self):
-        pass
+        item = {'url': self.url, 'name': self.soup.h1.text if self.soup.h1 else ''}
+
+        # 获取主要信息的div
+        rowall = self.soup.find('div', class_='rowall')
+
+        # 获取曾用名，地域，网址
+        if rowall:
+            used_name_span = rowall.find('span', string=re.compile('曾用名'))
+            region_span = rowall.find('span', string=re.compile('地域'))
+            website = rowall.find('span', string=re.compile('网址'))
+            if used_name_span:
+                item['used_name'] = used_name_span.next_sibling.text if used_name_span.next_sibling else ''
+            else:
+                item['used_name'] = ''
+            if region_span:
+                item['region'] = region_span.next_sibling.text if region_span.next_sibling else ''
+            else:
+                item['region'] = ''
+            if website:
+                item['website'] = website.next_sibling.text if website.next_sibling else ''
+            else:
+                item['website'] = ''
+        else:
+            item['used_name'] = ''
+            item['region'] = ''
+            item['website'] = ''
+
+        # 如果有logo就下载下来
+        logo_div = self.soup.find('div', class_="organ-logo")
+        if logo_div:
+            try:
+                img = logo_div.find('img')
+                src = img.get('src')
+                imgurl = re.sub(r'\s', '', src)
+                # print(os.getcwd())
+                req1 = requests.get(imgurl)
+                path = PATH + item['name'] + '.jpg'
+                f = open(path, 'wb')
+                f.write(req1.content)
+                f.close()
+            except Exception as e:
+                print('存取图片异常')
+                raise e
+        else:
+            print('{},无logo'.format(item['name']))
+        return item
 
     def store(self, db):
-        pass
+        item = self.crawl()
+        url = item['url']
+        name = item['name']
+        used_name = item['used_name']
+        region = item['region']
+        website = item['website']
+        sql = "INSERT INTO organization(url,name,used_name,region,website) " \
+              "VALUES ('{}','{}','{}','{}','{}')".format(url, name, used_name, region, website)
+        executeSql(db, sql)
 
 
 def executeSql(db, sql):
@@ -632,6 +693,15 @@ def getArticleUrls(db):
     curr = db.cursor()
     curr.execute(sql)
     urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+
+    sql2 = 'SELECT DISTINCT re_article_author.url_article ' \
+           'FROM re_article_author ' \
+           'LEFT JOIN article ON re_article_author.url_article=article.url ' \
+           'WHERE article.url is NULL'
+    curr.execute(sql2)
     for data in curr.fetchall():
         url = data[0]
         urls.append(url)
@@ -722,11 +792,31 @@ def crawlSource(urls, db):
         source.store(db)
 
 
-def getOrganizationUrls():
+def getOrganizationUrls(db):
     """获取未被爬取的作者所在机构链接"""
-    pass
+    urls = []
+    sql_ao = """
+                    SELECT DISTINCT
+                        re_author_organization.url_organization
+                    FROM
+                        re_author_organization
+                    LEFT JOIN organization ON re_author_organization.url_organization = organization.url
+                    WHERE
+                        organization.url IS NULL
+                    """
+    curr = db.cursor()
+    curr.execute(sql_ao)
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    return urls
 
 
-def crawlOrganization(urls):
+def crawlOrganization(urls, db):
     """爬取未被爬取的学者所在单位"""
-    pass
+    print("需要爬取的文献来源个数为 {}".format(len(urls)))
+    for url in urls:
+        rand = random.randint(1, 5)
+        time.sleep(rand)
+        organization = Organization(url)
+        organization.store(db)

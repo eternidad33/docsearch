@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from website.crawl.cnki_spiders import *
@@ -8,11 +9,10 @@ ARTICLE_URL = "dbcode=CAPJ&dbname=CAPJDAY&filename=ZZDZ20210513000"
 AUTHOR_URL = "skey=王颖&code=07079336"
 # AUTHOR_URL = "skey=杜会静&code=07074873"
 SOURCE_URL = "DBCode=cjfq&BaseID=ZZDZ"
-ORGANIZATION_URL = "DBCode=CDMD&BaseID=GBYDU"
-article = Article(ARTICLE_URL)
-author = Author(AUTHOR_URL)
-source = Source(SOURCE_URL)
-organization = Organization(ORGANIZATION_URL)
+# ORGANIZATION_URL = "sfield=in&skey=河北大学&code=0106010"
+ORGANIZATION_URL = "sfield=in&skey=北京大学"
+# ORGANIZATION_URL = "sfield=in&skey=武汉工程大学&code=0202782"
+
 db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnkidemo', port=3306, charset='utf8')
 
 
@@ -33,6 +33,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_article_crawl(self):
         """测试爬取单个文献"""
+        article = Article(ARTICLE_URL)
         item = article.crawl()
         print(item)
         self.assertIsNotNone(item, '无')
@@ -40,6 +41,7 @@ class MyTestCase(unittest.TestCase):
     def test_article_store(self):
         """存储单个文献"""
         flag = False
+        article = Article(ARTICLE_URL)
         try:
             article.store(db)
             flag = True
@@ -49,6 +51,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_author_crawl(self):
         """测试爬取单个作者"""
+        author = Author(AUTHOR_URL)
         item = author.crawl()
         print(item)
         author.close()
@@ -58,6 +61,7 @@ class MyTestCase(unittest.TestCase):
         """测试存储单个作者"""
         flag = False
         try:
+            author = Author(AUTHOR_URL)
             author.store(db)
             author.close()
             flag = True
@@ -67,6 +71,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_source_crawl(self):
         """测试爬取单个文献来源"""
+        source = Source(SOURCE_URL)
         item = source.crawl()
         print(item)
         self.assertIsNotNone(item, '无')
@@ -74,6 +79,7 @@ class MyTestCase(unittest.TestCase):
     def test_source_store(self):
         """测试存储单个文献"""
         flag = False
+        source = Source(SOURCE_URL)
         try:
             source.store(db)
             flag = True
@@ -83,13 +89,17 @@ class MyTestCase(unittest.TestCase):
 
     def test_organization_crawl(self):
         """测试爬取单个组织"""
-        item = {}
+        os.chdir('..')
+        organization = Organization(ORGANIZATION_URL)
+        item = organization.crawl()
         print(item)
         self.assertIsNotNone(item, '无')
 
     def test_organization_store(self):
         """存储组织"""
+        os.chdir('..')
         flag = False
+        organization = Organization(ORGANIZATION_URL)
         try:
             organization.store(db)
             flag = True
@@ -100,7 +110,7 @@ class MyTestCase(unittest.TestCase):
     def test_getArticleUrls(self):
         """测试sql：未爬取的文献"""
         urls = getArticleUrls(db)
-        print('需要爬取的个数为', len(urls))
+        print('需要爬取文章的个数为', len(urls))
         for url in urls:
             print(url)
         self.assertTrue(True)
@@ -148,6 +158,24 @@ class MyTestCase(unittest.TestCase):
             crawlAuthor(urls, db)
         except:
             self.assertTrue(False, "爬取未爬取的作者异常")
+        self.assertTrue(True)
+
+    def test_getOrganization(self):
+        """获取未被爬取的组织列表"""
+        urls = getOrganizationUrls(db)
+        print('需要爬取组织的个数为', len(urls))
+        for url in urls:
+            print(url)
+        self.assertTrue(True)
+
+    def test_crawlOrganization(self):
+        """存储未爬取的组织"""
+        os.chdir('..')
+        try:
+            urls = getOrganizationUrls(db)
+            crawlOrganization(urls, db)
+        except:
+            self.assertTrue(False, "爬取未爬取的组织异常")
         self.assertTrue(True)
 
 
