@@ -1,3 +1,4 @@
+import random
 import time
 
 import pymysql
@@ -146,13 +147,13 @@ class KeyList:
 
         # # 文献作者关系存储到mysql表
         # for url_author in authors:
-        #     sql_re_aa = "insert into re_article_author(url_article,url_author) values('{}','{}')".format(url_article,
-        #                                                                                                  url_author)
+        #     sql_re_aa = "insert into re_article_author(url_article,url_author) " \
+        #                 "values('{}','{}')".format(url_article, url_author)
         #     self._execute_sql(sql_re_aa)
 
         # 文献来源关系存储到mysql表中
-        sql_re_as = "insert into re_article_source(url_article,url_source) values('{}','{}')".format(url_article,
-                                                                                                     url_source)
+        sql_re_as = "insert into re_article_source(url_article,url_source) " \
+                    "values('{}','{}')".format(url_article, url_source)
         self._execute_sql(sql_re_as)
         return True
 
@@ -175,8 +176,8 @@ class KeyList:
         url_school = sourceToUrl(source_href)
 
         # 文献来源关系存储到mysql表中
-        sql_re_as = "insert into re_article_source(url_article,url_source) values('{}','{}')".format(url_article,
-                                                                                                     url_school)
+        sql_re_as = "insert into re_article_source(url_article,url_source) " \
+                    "values('{}','{}')".format(url_article, url_school)
         self._execute_sql(sql_re_as)
         return True
 
@@ -284,14 +285,12 @@ class Article(CrawlBase):
         summary = item['summary']
         keywords = re.sub(r"\[|\]|'", '', item['keys'])
         date = item['date'] if item['date'] else '2020-01-01'
-        sql_a = "insert into article(url, title, summary, keywords, date) VALUES ('{}','{}','{}','{}','{}')".format(url,
-                                                                                                                    title,
-                                                                                                                    summary,
-                                                                                                                    keywords,
-                                                                                                                    date)
+        sql_a = "insert into article(url, title, summary, keywords, date) " \
+                "VALUES ('{}','{}','{}','{}','{}')".format(url, title, summary, keywords, date)
         executeSql(db, sql_a)
         for au in item['authors']:
-            sql_re_aa = "insert into re_article_author(url_article, url_author) VALUES ('{}','{}')".format(url, au)
+            sql_re_aa = "insert into re_article_author(url_article, url_author) " \
+                        "VALUES ('{}','{}')".format(url, au)
             executeSql(db, sql_re_aa)
 
 
@@ -301,17 +300,22 @@ class Author(CrawlBase):
     关系：作者-文献，师生，所在机构，同机构的合作者
     """
 
-    # todo 爬取作者详情页
-    def __init__(self, url="dbcode=CAPJ&sfield=au&skey=%e6%9d%a8%e7%92%90&code=36280603"):
+    def __init__(self, url="skey=王宁&code=33167488"):
         super().__init__()
         self.url = url
-        new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?' + url
-        chromeOp = webdriver.ChromeOptions()
-        chromeOp.add_argument("headless")
-        self.driver = webdriver.Chrome(chrome_options=chromeOp)
+        new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?sfield=au&' + url
+        # fireOp = webdriver.FirefoxOptions()
+        # fireOp.add_argument("headless")
+        # self.driver = webdriver.Firefox(firefox_options=fireOp)
+        # chromeOp = webdriver.ChromeOptions()
+        # chromeOp.add_argument("headless")
+        # self.driver = webdriver.Chrome(chrome_options=chromeOp)
+        # self.driver = webdriver.Chrome()
+        self.driver = webdriver.Firefox()
         self.driver.get(new_url)
         self.driver.implicitly_wait(3)
         self.driver.maximize_window()
+        self.r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
     def crawl(self):
         """爬取作者详情
@@ -336,17 +340,104 @@ class Author(CrawlBase):
         item['cooperation'] = self._crawl_cooperation()
         return item
 
+    def store(self, db):
+        """存储数据
+        表：author，re_article_author，re_author_organization，re_teacher_student
+        """
+        try:
+            item = self.crawl()
+        except NoSuchElementException:
+            url = self.url
+            m = re.search('skey=(.*?)&', url)
+            name = m.group(1) if m else "##########"
+            sql0 = "insert into author(url,name) values('{}','{}')".format(self.url, name)
+            executeSql(db, sql0)
+            print('无法获取作者相关信息')
+            return
+        url = item['url']
+        name = item['name']
+        major = item['major']
+        organization = item['organization']
+        sum_publish = item['sum_publish']
+        sum_download = item['sum_download']
+        # 插入作者
+        sql_a = "INSERT INTO author(url,name,major,sum_publish,sum_download) " \
+                "VALUES ('{}','{}','{}','{}','{}')".format(url, name, major, sum_publish, sum_download)
+        executeSql(db, sql_a)
+
+        # 插入作者组织关系
+        sql_ao = "INSERT INTO re_author_organization(url_author, url_organization) " \
+                 "VALUES ('{}','{}')".format(url, organization)
+        executeSql(db, sql_ao)
+
+        # 插入文章作者关系
+        articles = item['articles']
+        for article in articles:
+            sql_aa = "INSERT INTO re_article_author(url_article, url_author) " \
+                     "VALUES ('{}','{}')".format(article, url)
+            executeSql(db, sql_aa)
+
+        # 插入师生关系
+        teachers = item['teachers']
+        students = item['students']
+        for teacher in teachers:
+            sql_ts = "INSERT INTO re_teacher_student(url_teacher, url_student) " \
+                     "VALUES ('{}','{}')".format(teacher, url)
+            executeSql(db, sql_ts)
+
+        for student in students:
+            sql_st = "INSERT INTO re_teacher_student(url_teacher, url_student) " \
+                     "VALUES ('{}','{}')".format(url, student)
+            executeSql(db, sql_st)
+
+        # 同机构合作者的插入作者组织关系
+        coop = item['cooperation']
+        for co in coop:
+            sql_co = "INSERT INTO re_author_organization(url_author,url_organization) " \
+                     "VALUES ('{}','{}')".format(co, organization)
+            executeSql(db, sql_co)
+
     def _crawl_articles(self):
-        """爬取作者的文献"""
+        """爬取他发表的文献
+        frame3为他发表的期刊文献，frame7为论文"""
         res = []
+        # todo 爬取作者详情页的期刊
+        # try:
+        #     # 跳回原框架
+        #     self.driver.switch_to.default_content()
+        #     self.driver.switch_to.frame("frame3")
+        #     ul_tag=self.driver.find_element_by_class_name('bignum')
+        #     lis=ul_tag.find_elements_by_tag_name('li')
+        #     for li in lis:
+        #         # 抽取期刊文献信息
+        #         pass
+        # except NoSuchElementException:
+        #     print("作者无期刊文献！")
+        # except WebDriverException:
+        #     print("进入框架frame3异常！")
         try:
             # 跳回原框架
             self.driver.switch_to.default_content()
-            self.driver.switch_to.frame("frame2")
+            self.driver.switch_to.frame("frame7")
+            ul_tag = self.driver.find_element_by_class_name('bignum')
+            lis = ul_tag.find_elements_by_tag_name('li')
+            for li in lis:
+                text = li.text
+                # print(text)
+                m = re.search(r'\d{4}', text)
+                year = m.group(0)
+                tag_a = li.find_element_by_tag_name('a')
+                href = tag_a.get_attribute('href')
+                url = articleToUrl(href)
+                # print(tag_a.text + ',发表年份：' + year)
+                date = year + '-01-01'
+                self.r.set(url, date)
+                # print(url)
+                res.append(url)
         except NoSuchElementException:
-            print("作者无文献！")
+            print("作者无博硕论文文献！")
         except WebDriverException:
-            print("进入框架frame2异常！")
+            print("进入框架frame7异常！")
         return res
 
     def _crawl_teachers(self):
@@ -400,17 +491,29 @@ class Author(CrawlBase):
             # 跳回原框架
             self.driver.switch_to.default_content()
             self.driver.switch_to.frame("frame10")
+            h3 = self.driver.find_element_by_tag_name('h3')
+            # print(h3.text)
+            if '同机构' not in h3.text:
+                raise NoSuchElementException
+            ul = self.driver.find_element_by_class_name('col8')
+            lis = ul.find_elements_by_tag_name('li')
+            for li in lis:
+                a_tag = li.find_element_by_tag_name('a')
+                href = a_tag.get_attribute('onclick')
+                s = re.sub(r'\s', '', href)
+                m = re.search(r'\((.*?)\)', s)
+                temp = m.group(0)
+                t = stuToUrl(temp)
+                res.append(t)
         except NoSuchElementException:
             print("作者无同机构合作者！")
         except WebDriverException:
             print("进入框架frame10异常！")
         return res
 
-    def store(self, db):
-        """存储数据
-        表：author，re_article_author，re_author_organization，re_teacher_student
-        """
-        pass
+    def close(self):
+        self.driver.close()
+        self.r.close()
 
 
 class Source(CrawlBase):
@@ -482,8 +585,8 @@ class Source(CrawlBase):
         basic = item['basic']
         publish = item['publish']
         evaluation = item['evaluation']
-        sql = "insert into source(url, name, basic_info, publish_info, evaluation) VALUES ('{}','{}','{}','{}','{}')".format(
-            url, name, basic, publish, evaluation)
+        sql = "insert into source(url, name, basic_info, publish_info, evaluation) " \
+              "VALUES ('{}','{}','{}','{}','{}')".format(url, name, basic, publish, evaluation)
         executeSql(db, sql)
 
 
@@ -522,7 +625,10 @@ def executeSql(db, sql):
 def getArticleUrls(db):
     """获取未被爬取的文献链接"""
     # sql1 = "SELECT DISTINCT article.url FROM article LEFT JOIN re_article_author ON article.url=re_article_author.url_article WHERE re_article_author.url_article is NULL"
-    sql = 'SELECT DISTINCT re_article_source.url_article FROM re_article_source LEFT JOIN article ON re_article_source.url_article=article.url WHERE article.url is NULL'
+    sql = 'SELECT DISTINCT re_article_source.url_article ' \
+          'FROM re_article_source ' \
+          'LEFT JOIN article ON re_article_source.url_article=article.url ' \
+          'WHERE article.url is NULL'
     curr = db.cursor()
     curr.execute(sql)
     urls = []
@@ -530,29 +636,6 @@ def getArticleUrls(db):
         url = data[0]
         urls.append(url)
     return urls
-
-
-def getAuthorsUrls(db):
-    """获取未被爬取的作者链接"""
-    pass
-
-
-def getSourceUrls(db):
-    """获取未被爬取的文献来源链接"""
-    # todo 有bug
-    sql = 'SELECT DISTINCT re_article_source.url_source FROM re_article_source LEFT JOIN source ON re_article_source.url_article=source.url WHERE source.url is NULL'
-    curr = db.cursor()
-    curr.execute(sql)
-    urls = []
-    for data in curr.fetchall():
-        url = data[0]
-        urls.append(url)
-    return urls
-
-
-def getOrganizationUrls():
-    """获取未被爬取的作者所在机构链接"""
-    pass
 
 
 def crawlArticle(urls, db):
@@ -566,9 +649,68 @@ def crawlArticle(urls, db):
         # print(item)
 
 
-def crawlAuthor(urls):
+def getAuthorsUrls(db):
+    """获取未被爬取的作者链接"""
+    sql_aa = 'SELECT DISTINCT re_article_author.url_author ' \
+             'FROM re_article_author ' \
+             'LEFT JOIN author ON re_article_author.url_author=author.url ' \
+             'WHERE author.url is NULL'
+    sql_ao = """
+                SELECT DISTINCT
+                    re_author_organization.url_author
+                FROM
+                    re_author_organization
+                LEFT JOIN author ON re_author_organization.url_author = author.url
+                WHERE
+                    author.url IS NULL
+                """
+    curr = db.cursor()
+    curr.execute(sql_aa)
+    urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    # curr.execute(sql_ao)
+    # for data in curr.fetchall():
+    #     url = data[0]
+    #     urls.append(url)
+    return urls
+
+
+def crawlAuthor(urls, db):
     """爬取未被爬取的作者"""
-    pass
+
+    length = len(urls)
+    count = 0
+    for url in urls:
+        rand = random.randint(1, 5)
+        time.sleep(rand)
+        author = Author(url)
+        author.store(db)
+        author.close()
+        count += 1
+        print('以爬取完成：{}/{}'.format(count, length))
+
+
+def getSourceUrls(db):
+    """获取未被爬取的文献来源链接"""
+    sql = """
+            SELECT DISTINCT
+                re_article_source.url_source
+            FROM
+                re_article_source
+            LEFT JOIN source ON re_article_source.url_source = source.url
+            WHERE
+                source.url IS NULL
+	        """
+    # sql = 'SELECT DISTINCT re_article_source.url_source FROM re_article_source LEFT JOIN source ON re_article_source.url_article=source.url WHERE source.url is NULL'
+    curr = db.cursor()
+    curr.execute(sql)
+    urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    return urls
 
 
 def crawlSource(urls, db):
@@ -578,6 +720,11 @@ def crawlSource(urls, db):
         time.sleep(2)
         source = Source(url)
         source.store(db)
+
+
+def getOrganizationUrls():
+    """获取未被爬取的作者所在机构链接"""
+    pass
 
 
 def crawlOrganization(urls):

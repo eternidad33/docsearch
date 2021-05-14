@@ -6,17 +6,19 @@ def organizationToUrl(href):
     例如："\n                        TurnPageToKnet('in','南京邮电大学','0101257')\n
     转换成 “sfield=in&skey=南京邮电大学&code=0101257”
     """
+    res = '#'
     start, end = href.index('(') + 1, href.index(')')
     s = href[start:end]
     list0 = s.replace("'", "").split(',')
-    res = "sfield=" + list0[0] + "&skey=" + list0[1] + "&code=" + list0[2]
+    if len(list0) > 2:
+        res = "sfield=" + list0[0] + "&skey=" + list0[1] + "&code=" + list0[2]
     return res
 
 
 def stuToUrl(href):
     """
     将('au','王永超','42141239')
-    转换成 sfield=au&skey=王永超&code=42141239
+    转换成 skey=王永超&code=42141239
     访问链接：https://kns.cnki.net/kcms/detail/knetsearch.aspx?+返回值
     """
     ss = href.split(',')
@@ -27,7 +29,8 @@ def stuToUrl(href):
     skey = m2.group(0).replace("'", "")
     code = m3.group(0).replace("'", "")
 
-    return 'sfield={}&skey={}&code={}'.format(sfield, skey, code)
+    # return 'sfield={}&skey={}&code={}'.format(sfield, skey, code)
+    return 'skey={}&code={}'.format(skey, code)
 
 
 def articleToUrl(href):
