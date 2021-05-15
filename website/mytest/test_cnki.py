@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
     def test_keyList_crawl(self):
         """测试检索页"""
         flag = False
-        key = "人工智能"
+        key = "大数据"
         try:
             k = KeyList()
             k.input_keyword(key)

@@ -740,10 +740,10 @@ def getAuthorsUrls(db):
     for data in curr.fetchall():
         url = data[0]
         urls.append(url)
-    # curr.execute(sql_ao)
-    # for data in curr.fetchall():
-    #     url = data[0]
-    #     urls.append(url)
+    curr.execute(sql_ao)
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
     return urls
 
 
