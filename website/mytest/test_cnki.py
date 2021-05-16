@@ -6,17 +6,28 @@ from website.crawl.cnki_spiders import *
 ARTICLE_URL = "dbcode=CAPJ&dbname=CAPJDAY&filename=ZZDZ20210513000"
 # AUTHOR_URL = "skey=王宁&code=33167488"
 # AUTHOR_URL = "skey=傅广生&code=05967496"
-AUTHOR_URL = "skey=王颖&code=07079336"
+# AUTHOR_URL = "skey=王颖&code=07079336"
+AUTHOR_URL = "skey=袁方&code=07075939"
 # AUTHOR_URL = "skey=杜会静&code=07074873"
 SOURCE_URL = "DBCode=cjfq&BaseID=ZZDZ"
 # ORGANIZATION_URL = "sfield=in&skey=河北大学&code=0106010"
 ORGANIZATION_URL = "sfield=in&skey=北京大学"
 # ORGANIZATION_URL = "sfield=in&skey=武汉工程大学&code=0202782"
 
-db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnkidemo', port=3306, charset='utf8')
+MYSQL_HOST = "127.0.0.1"
+MYSQL_PORT = 3306
+USERNAME = "root"
+PASSWORD = "123456"
+DATABASE = "cnki"
+
+# db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnkidemo', port=3306, charset='utf8')
+
+
+db = pymysql.connect(host=MYSQL_HOST, user=USERNAME, passwd=PASSWORD, db=DATABASE, port=MYSQL_PORT, charset='utf8')
 
 
 class MyTestCase(unittest.TestCase):
+
     def test_keyList_crawl(self):
         """测试检索页"""
         flag = False
@@ -176,6 +187,22 @@ class MyTestCase(unittest.TestCase):
             crawlOrganization(urls, db)
         except:
             self.assertTrue(False, "爬取未爬取的组织异常")
+        self.assertTrue(True)
+
+    def test_getAuthorTS(self):
+        """获取师生关系表中的未爬作者"""
+        urls = getAuthorsUrls_ts(db)
+        print('需要爬取作者的个数为', len(urls))
+        for url in urls:
+            print(url)
+        self.assertTrue(True)
+
+    def test_main(self):
+        """测试主程序"""
+        try:
+            main(db)
+        except:
+            self.assertTrue(False, "主程序执行异常")
         self.assertTrue(True)
 
 
