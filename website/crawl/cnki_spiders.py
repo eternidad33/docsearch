@@ -5,8 +5,10 @@ import pymysql
 import redis
 import requests
 from bs4 import BeautifulSoup
+from pymysql import IntegrityError
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
 from website.crawl.utils import *
@@ -15,7 +17,7 @@ MYSQL_HOST = "127.0.0.1"
 MYSQL_PORT = 3306
 USERNAME = "root"
 PASSWORD = "123456"
-DATABASE = "cnkidemo"
+DATABASE = "cnki"
 
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
@@ -309,12 +311,12 @@ class Author(CrawlBase):
         new_url = 'https://kns.cnki.net/kcms/detail/knetsearch.aspx?sfield=au&' + url
         # fireOp = webdriver.FirefoxOptions()
         # fireOp.add_argument("headless")
-        # self.driver = webdriver.Firefox(firefox_options=fireOp)
-        # chromeOp = webdriver.ChromeOptions()
-        # chromeOp.add_argument("headless")
-        # self.driver = webdriver.Chrome(chrome_options=chromeOp)
+        # self.driver = webdriver.Firefox(options=fireOp)
+        chromeOp = Options()
+        chromeOp.add_argument("--headless")
+        self.driver = webdriver.Chrome(options=chromeOp)
         # self.driver = webdriver.Chrome()
-        self.driver = webdriver.Firefox()
+        # self.driver = webdriver.Firefox()
         self.driver.get(new_url)
         self.driver.implicitly_wait(3)
         self.driver.maximize_window()
@@ -677,6 +679,8 @@ def executeSql(db, sql):
         # 提交到数据库执行
         db.commit()
         print('【成功】{}'.format(sql))
+    except IntegrityError as ie:
+        print('【异常】此条记录已存在！{}'.format(sql))
     except Exception as e:
         # 如果发生错误则回滚
         db.rollback()
@@ -710,12 +714,16 @@ def getArticleUrls(db):
 
 def crawlArticle(urls, db):
     """爬取未被爬取的文章"""
-    print("需要爬取的文献个数为 {}".format(len(urls)))
+    length = len(urls)
+    count = 0
+    print("需要爬取的文献个数为 {}".format(length))
     for url in urls:
         time.sleep(2)
         article = Article(url)
         # item = a.crawl()
         article.store(db)
+        count += 1
+        print('已爬取文章页面完成：{}/{}'.format(count, length))
         # print(item)
 
 
@@ -747,6 +755,35 @@ def getAuthorsUrls(db):
     return urls
 
 
+def getAuthorsUrls_ts(db):
+    """师生关系表中未被爬取的作者"""
+    sql_at = """SELECT DISTINCT
+                    url_teacher
+                FROM
+                    `re_teacher_student`
+                WHERE
+                    url_teacher NOT IN (SELECT url FROM author);
+            """
+    sql_as = """SELECT DISTINCT
+                        url_student
+                    FROM
+                        `re_teacher_student`
+                    WHERE
+                        url_student NOT IN (SELECT url FROM author);
+                """
+    curr = db.cursor()
+    curr.execute(sql_at)
+    urls = []
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    curr.execute(sql_as)
+    for data in curr.fetchall():
+        url = data[0]
+        urls.append(url)
+    return urls
+
+
 def crawlAuthor(urls, db):
     """爬取未被爬取的作者"""
 
@@ -755,11 +792,15 @@ def crawlAuthor(urls, db):
     for url in urls:
         rand = random.randint(1, 5)
         time.sleep(rand)
-        author = Author(url)
-        author.store(db)
-        author.close()
-        count += 1
-        print('以爬取完成：{}/{}'.format(count, length))
+        try:
+            author = Author(url)
+            author.store(db)
+            author.close()
+            count += 1
+            print('已爬取作者页面完成：{}/{}'.format(count, length))
+        except WebDriverException as web:
+            print('【webdriver异常】' + web.msg)
+            continue
 
 
 def getSourceUrls(db):
@@ -820,3 +861,18 @@ def crawlOrganization(urls, db):
         time.sleep(rand)
         organization = Organization(url)
         organization.store(db)
+
+
+def main(db):
+    """爬虫主程序"""
+    while True:
+        urls_1 = getArticleUrls(db)
+        crawlArticle(urls_1, db)
+        # urls_2 = getAuthorsUrls(db)
+        # crawlAuthor(urls_2, db)
+        urls_3 = getAuthorsUrls_ts(db)
+        crawlAuthor(urls_3, db)
+        # urls_3 = getSourceUrls(db)
+        # crawlSource(urls_3, db)
+        # urls_4 = getOrganizationUrls(db)
+        # crawlOrganization(urls_4, db)
