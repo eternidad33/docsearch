@@ -293,10 +293,10 @@ class Article(CrawlBase):
         sql_a = "insert into article(url, title, summary, keywords, date) " \
                 "VALUES ('{}','{}','{}','{}','{}')".format(url, title, summary, keywords, date)
         executeSql(db, sql_a)
-        for au in item['authors']:
-            sql_re_aa = "insert into re_article_author(url_article, url_author) " \
-                        "VALUES ('{}','{}')".format(url, au)
-            executeSql(db, sql_re_aa)
+        # for au in item['authors']:
+        #     sql_re_aa = "insert into re_article_author(url_article, url_author) " \
+        #                 "VALUES ('{}','{}')".format(url, au)
+        #     executeSql(db, sql_re_aa)
 
 
 class Author(CrawlBase):
@@ -718,7 +718,8 @@ def crawlArticle(urls, db):
     count = 0
     print("需要爬取的文献个数为 {}".format(length))
     for url in urls:
-        time.sleep(2)
+        rand = random.random()
+        time.sleep(rand)
         article = Article(url)
         # item = a.crawl()
         article.store(db)
