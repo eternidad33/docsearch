@@ -858,7 +858,7 @@ def crawlOrganization(urls, db):
     """爬取未被爬取的学者所在单位"""
     print("需要爬取的文献来源个数为 {}".format(len(urls)))
     for url in urls:
-        rand = random.randint(1, 5)
+        rand = random.random()
         time.sleep(rand)
         organization = Organization(url)
         organization.store(db)

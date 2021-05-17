@@ -18,7 +18,7 @@ MYSQL_HOST = "127.0.0.1"
 MYSQL_PORT = 3306
 USERNAME = "root"
 PASSWORD = "123456"
-DATABASE = "cnki"
+DATABASE = "cnkidemo"
 
 # db = pymysql.connect(host='localhost', user='root', passwd='123456', db='cnkidemo', port=3306, charset='utf8')
 
