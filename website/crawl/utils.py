@@ -121,9 +121,68 @@ def sourceToUrl(href):
     return res
 
 
+def extractAuthorName(href):
+    """抽取作者姓名
+    例如：skey=李鑫&code=04558829
+    返回：李鑫
+    """
+    pattern = 'skey=(.*?)&'
+    m = re.search(pattern, href)
+    try:
+        res = m.group(1)
+    except:
+        res = ''
+    return res
+
+
+def extractArticleFileName(href):
+    """抽取文章filename
+    例如：dbcode=CMFD&dbname=CMFDTEMP&filename=1021023887.NH
+    返回：1021023887.NH
+    """
+    pattern = 'filename=(.*)'
+    m = re.search(pattern, href)
+    try:
+        res = m.group(1)
+    except:
+        res = ''
+    return res
+
+
+def extractBaseID(href):
+    """抽取sourceURL的baseID
+    例如：DBCode=CDMD&BaseID=GBFGU
+    返回：GBFGU
+    """
+    pattern = 'BaseID=(.*)'
+    m = re.search(pattern, href)
+    try:
+        res = m.group(1)
+    except:
+        res = ''
+    return res
+
+
+def extractOrganizationName(href):
+    """抽取organization的name
+    例如：sfield=in&skey=上海建工集团&code=0208315
+    返回：上海建工集团
+    """
+    pattern = 'skey=(.*?)&'
+    m = re.search(pattern, href)
+    try:
+        res = m.group(1)
+    except:
+        res = ''
+    return res
+
+
 if __name__ == '__main__':
     sourcehref = 'https://kns.cnki.net/KNS8/Navi?DBCode=cjfq&BaseID=KQDX'
     lunwen_url = 'https://kns.cnki.net/KNS8/Detail?sfield=fn&QueryID=5&CurRec=1&DbCode=CDFD&dbname=CDFDLAST2021&filename=1021021170.nh'
     au = "\n                                  TurnPageToKnetV('au','王宁','33167488','-1jneb6HWg72-buRfraVc4ne9yN6-0WXaAnsWNgRfSH807I0dZ5EdylOABmJ53Mf');\n                                "
     a = auToUrl(au)
     print(a)
+    au = 'skey=李鑫&code=04558829'
+    at = 'dbcode=CMFD&dbname=CMFDTEMP&filename=1021023887.NH'
+    print(extractArticleFileName(at))
