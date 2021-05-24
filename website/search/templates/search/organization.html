@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ organization.name }}</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body>
+<p>
+    <b>名称：</b>{{ organization.name }}
+</p>
+<p>
+    <b>曾用名：</b>{{ organization.used_name }}
+</p>
+<p>
+    <b>地域：</b>{{ organization.region }}
+</p>
+<p>
+    <b>官网：</b><a href="{{ organization.website }}">{{ organization.website }}</a>
+</p>
+<p><a href="https://kns.cnki.net/kcms/detail/knetsearch.aspx?{{ organization.url }}">知网链接</a></p>
+<hr>
+<h2>相关学者</h2>
+{% for author in authors %}
+    <a href="{% url 'search:author' author.url %}">{{ author.name }}</a>
+{% endfor %}
+</body>
+</html>

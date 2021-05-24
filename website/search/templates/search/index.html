@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head prefix="og: http://ogp.me/ns# website: http://ogp.me/ns/website#">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>学术信息检索</title>
+    <meta charset="utf-8">
+    {% load static %}
+    <meta name="theme-color" content="#2f3238">
+
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body data-layout="home">
+<div id="curtain">
+    <header id="header">
+        <form id="search-form" action="search" method="get" target="_self">
+            {% csrf_token %}
+            <div id="search-wrapper" data-focus="false">
+                <div id="search-bar">
+                    <input id="search-input" type="search" autocapitalize="none"
+                           autocomplete="off" spellcheck="false" maxlength="70" title="Magi 搜索" aria-label="搜索"
+                           placeholder="关键词 / 师生关系" required="" data-original="">
+                    <button id="search-clear" class="icon icon-clear" type="button"></button>
+                    <input id="search-submit" class="icon icon-submit" type="submit" value="">
+                </div>
+                <ol id="search-suggestions"></ol>
+            </div>
+        </form>
+        <div id="more">
+            <div class="theme-toggler-wrapper">
+                <input type="checkbox" id="theme-toggler">
+                <label for="theme-toggler" title="切换主题"></label>
+            </div>
+        </div>
+    </header>
+</div>
+<div id="content">
+    <section id="result">
+        <aside id="left"></aside>
+        <main>
+            <div class="tips">请按 <em>回车键</em> 以发起搜索</div>
+        </main>
+        <aside id="right"></aside>
+    </section>
+</div>
+<script type="text/javascript">
+    (function () {
+        var i18n = window.i18n = Object.create(null);
+        i18n.bibliographyHeader = "主要学习来源";
+        i18n.nextPageLoad = "加载更多";
+        i18n.nextPageLoading = "正在加载";
+        i18n.censorWarning = "部分结果未予显示";
+        i18n.censorLevel1 = "NGU1ZC04YmM0LTJlLTNmLTUxNzEtNGVhNy01MTVhLWEtNGU2MC0yOC01OTJhLTViNTAtN2MtNWU4Ni00ZTMwLTdjLTUzMDUtNWI1MC0yOS1hLTU5MjctN2VhYS01MTQzLTdjLTZiNjMtODljMS03ZjUxLTdjLTY1YjAtNTUxMC00ZWJhLTdjLTRmMmEtNzA2Yi03Yy04ZDg1LThkOGEtN2VhMi01ODk5LWEtNTkyOS01Yjg5LTk1ZTgtMmUtM2YtMjgtNGU4Yi00ZWY2LTdjLTVjNjAtNjc0MC03Yy04MWVhLTcxMWEtMjktYS02NWUwLTc1NGMtMjgtNmQ0Zi04OWM4LTdjLTdmNTEtN2VkYy0yOS1hLTY2MGUtNjE2Ny0yOC01NDY4LTYyYTUtN2MtNjJhNS03Yy03ZjUxLTI5LWEtNmNkNS04ZjZlLTUyOWYtN2MtNjc0ZS02ZDJhLTVmZDctYS03ZjE2LTdhMGItOTY4Zi02MGYzLTdjLTcwLTcyLTZmLTY3LTcyLTYxLTZkLTc0LTY4LTY5LTZlLTZiLTdjLTg5ZTMtNGY1My01MTVhLTY1ODctNTMxNi1hLTgxZWEtNzUzMS05NWU4LWEtOTZmNi01MTZiLTViYWEtN2FlMC1hLTUzNDMtNGViYS04YmExLTUyMTItYS05MGRkLTZkNzctNGUxYy1hLTUzZjYtOTQ4YS05ODk2";
+        i18n.censorLevel2 = "MjgtNjc0ZS03NjdiLThmODktN2MtOTY0OC02YzM0LTYyNDEtN2MtOWE2Yy04MmYxLTRlNWQtN2MtODUyMS04MmYxLTY1ODctMjktMmUtMmEtNjAzYi03ZWRmLTI0LWEtMjgtOTk5OS02ZTJmLTdjLTZmYjMtOTVlOC03Yy01M2YwLTZlN2UtN2MtNjViMC03NTg2LTdjLTg5N2YtODVjZi0yOS0yMC0yZS0yYi0yMC0yZS0yYS01NmZkLTViYjYtMjQtYS0yOC05OTk5LTZlMmYtN2MtNmZiMy05NWU4LTdjLTUzZjAtNmU3ZS03Yy02NWIwLTc1ODYtN2MtODk3Zi04NWNmLTI5LTI4LTcyZWMtN2FjYi03Yy01ZWZhLTU2ZmQtMjktYS01Yi02ZTJmLTZmYjMtNTNmMC03NTg2LTg1Y2YtNWQtNzJlYy1hLTVjLTYyLTY3LTY2LTc3LTVjLTYyLTdjLTkxZDEtNzZmZS01ZGU1LTdhMGItYS00ZTJkLTU2ZmQtNWMtNzMtM2YtNTZmZC01Yi02NWQ3LTVmYmQtNmI0Yy01ZC1hLTRlNjAtMjgtOGZkMS01ZTczLTdjLTY2MGUtNmNmZC03Yy00ZWYyLTUyY2ItMjktYS00ZWJhLTJlLTNmLTcwYjgtNWYzOS1hLTUxNmQtNTZkYi03Yy01MzE3LTRlYWMtOThjZS02Y2UyLWEtNTQzZS01YzE0LTVmMDAtNWItNWUwYy04OTdmLTVkLWEtNTZmZC03YzRkLTJlLTNmLTI4LTk5OTktNmUyZi03Yy02ZmIzLTk1ZTgtN2MtNTNmMC02ZTdlLTdjLTY1YjAtNzU4Ni03Yy04OTdmLTg1Y2YtMjktYS02MDNiLTdlZGYtMmUtM2YtMjgtNjc0ZS03NjdiLThmODktN2MtOTY0OC02YzM0LTYyNDEtN2MtOWE2Yy04MmYxLTRlNWQtN2MtODUyMS04MmYxLTY1ODctMjktYS02NzRlLTUxNGItNWYzYS03Yy02YzVmLTZjZmQtNmMxMS03Yy02ZTI5LTViYjYtNWI5ZC03Yy04MGUxLTk1MjYtNmQ5Yi03Yy01ZjZkLTRlM2QtNWE5Yi1hLTZkM2ItNjQ1OC01NjY4LTViOTgtN2MtNzcxZi01NTg0LTVmY2QtYS03MGVkLTZiZDQtNWEwNS1hLThiYjAtODAwNS02NWUwLTc1ODYtNzU0Yy1hLTkwMDAtNTE1YS03Yy00ZTA5LTkwMDAtYS05MGVkLTY1ODctOGQzNS1hLTk0YTYtNWI5YS02M2E1LTczZWQtNGViYS1hLTk4OWMtODI3Mi05NzY5LTU0N2QtYS00ZTYwLThmZDE=";
+    })();
+</script>
+<script type="text/javascript" src="{% static 'search/js/leader-line.js' %}"></script>
+<script type="text/javascript" src="{% static 'search/js/main.js' %}"></script>
+</body>
+</html>

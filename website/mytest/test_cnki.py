@@ -205,6 +205,21 @@ class MyTestCase(unittest.TestCase):
             self.assertTrue(False, "主程序执行异常")
         self.assertTrue(True)
 
+    def test_crawl(self):
+        """测试爬取单个文章、作者，机构，来源的详情"""
+        try:
+            os.chdir('..')
+            article = Article(ARTICLE_URL)
+            author = Author(AUTHOR_URL)
+            source = Source(SOURCE_URL)
+            organization = Organization(ORGANIZATION_URL)
+            article.store(db)
+            author.store(db)
+            source.store(db)
+            organization.store(db)
+        except:
+            self.assertTrue(False, '单个详情异常')
+
 
 if __name__ == '__main__':
     unittest.main()

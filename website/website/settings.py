@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'search.apps.SearchConfig',
     'polls.apps.PollsConfig',
     'crawl.apps.CrawlConfig',
     'django.contrib.admin',

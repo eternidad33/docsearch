@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>results</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body>
+<div>
+    <aside id="left"></aside>
+    {% for article in articles %}
+        <div class="card" data-type="web">
+            <a href="{% url 'search:article' article.url %}">
+                <h3>{{ article.title }}</h3>
+                <a href="https://kns.cnki.net/kcms/detail/detail.aspx?{{ article.url }}">
+                    <cite>https://kns.cnki.net/kcms/detail/detail.aspx?{{ article.url }}</cite>
+                </a>
+
+            </a>
+            <p>
+                <time>{{ article.date }}</time>
+                {{ article.summary }}
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

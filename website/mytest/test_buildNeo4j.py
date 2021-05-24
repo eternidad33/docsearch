@@ -1,3 +1,4 @@
+import time
 import unittest
 
 import pymysql
@@ -19,8 +20,8 @@ class MyTestCase(unittest.TestCase):
     def test_setCONSTRAINT(self):
         try:
             g = Graph(auth=('neo4j', '123456'))
-            # setCONSTRAINT(g, 'article', 'url')
-            # setCONSTRAINT(g, 'author', 'url')
+            setCONSTRAINT(g, 'article', 'url')
+            setCONSTRAINT(g, 'author', 'url')
             setCONSTRAINT(g, 'source', 'url')
             setCONSTRAINT(g, 'organization', 'url')
         except:
@@ -138,11 +139,19 @@ class MyTestCase(unittest.TestCase):
 
     def test_main(self):
         try:
+            start = time.time()
+
             db = pymysql.connect(host=MYSQL_HOST, user=USERNAME, passwd=PASSWORD,
                                  db=DATABASE, port=MYSQL_PORT, charset='utf8')
             g = Graph(auth=('neo4j', '123456'))
             main(db, g)
             db.close()
+
+            end = time.time()
+            t = end - start
+            m, s = divmod(t, 60)
+            h, m = divmod(m, 60)
+            print("程序耗时 {:.0f}时 {:.0f}分 {:.0f}秒".format(h, m, s))
         except:
             self.assertTrue(False, '存储作者节点neo4j异常')
 

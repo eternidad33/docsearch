@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body>
+<div>
+    <h1 align="center">{{ article.title }}</h1>
+    <p><b>作者：</b>
+        {% for author in authors %}
+            <a href="{% url 'search:author' author.url %}">{{ author.name }}</a>
+        {% endfor %}
+    </p>
+    <p><b>关键词：</b>{{ article.keywords }}</p>
+    <p><b>摘要：</b>{{ article.summary }}</p>
+    <p><b>发布日期：</b>{{ article.date }}</p>
+    <p><a href="https://kns.cnki.net/kcms/detail/detail.aspx?{{ article.url }}">知网链接</a></p>
+    <hr>
+    <h2>相关文章</h2>
+    {% for art in reArticles %}
+        <p>{{ forloop.counter }}、<a href="{% url 'search:article' art.url %}">{{ art.title }}</a></p>
+    {% endfor %}
+    <h2>相关学者</h2>
+    {% for au in reAuthors %}
+        <a href="{% url 'search:author' au.url %}">{{ au.name }}</a>
+    {% endfor %}
+</div>
+</body>
+</html>

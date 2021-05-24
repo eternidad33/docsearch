@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ source.name }}</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body>
+<p><b>名称：</b>{{ source.name }}</p>
+<p><b>基本信息：</b>{{ source.basic_info }}</p>
+<p><b>出版信息：</b>{{ source.publish_info }}</p>
+<p><b>评估信息：</b>{{ source.evaluation }}</p>
+<p><a href="https://kns.cnki.net/KNS8/Navi?{{ source.url }}">知网链接</a></p>
+</body>
+</html>

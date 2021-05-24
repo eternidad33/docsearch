@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ author.name }}</title>
+    {% load static %}
+    <link id="theme-style" rel="stylesheet" href="{% static 'search/css/dark.css' %}">
+</head>
+<body>
+<p><b>姓名：</b>{{ author.name }}</p>
+<p><b>专业：</b>{{ author.major }}</p>
+<p><b>所在机构：</b><a href="{% url 'search:organization' organization.url %}">{{ organization.name }}</a></p>
+<p><b>总发布量：</b>{{ author.sum_publish }}</p>
+<p><b>总下载量：</b>{{ author.sum_download }}</p>
+<p><a href="https://kns.cnki.net/kcms/detail/knetsearch.aspx?sfield=au&{{ author.url }}">知网链接</a></p>
+<hr>
+<h2>导师</h2>
+{% if not teachers %}<p><strong>无导师</strong></p>{% endif %}
+{% for teacher in teachers %}
+    <p><a href="{% url 'search:author' teacher.url %}">{{ teacher.name }}</a></p>
+{% endfor %}
+<h2>指导的学生</h2>
+<p>
+{% if not students %}<p><strong>无学生</strong></p>{% endif %}
+{% for student in students %}
+    <a href="{% url 'search:author' student.url %}">{{ student.name }}</a>
+{% endfor %}
+</p>
+
+<h2>发布过的文章</h2>
+{% if not articles %}<p><strong>文章未收录</strong></p>{% endif %}
+{% for article in articles %}
+    <p>{{ forloop.counter }}、<a href="{% url 'search:article' article.url %}">{{ article.title }}</a>
+    </p>
+{% endfor %}
+<h2>同机构合作者</h2>
+{% if not co %}<p><strong>无合作者</strong></p>{% endif %}
+<p>
+    {% for c in co %}
+        <a href="{% url 'search:author' c.url %}">{{ c.name }}</a>
+    {% endfor %}
+</p>
+
+</body>
+</html>
