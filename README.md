@@ -43,7 +43,7 @@ document 相关文档
 
 ## 截图展示
 
-<table border="1">
+<table>
     <tr>
         <td>爬虫1<br/>
             <img src="img/1.jpg" alt="爬虫">
