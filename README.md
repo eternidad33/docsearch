@@ -46,42 +46,42 @@ document 相关文档
 <table>
     <tr>
         <td>爬虫1<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/1.jpg" alt="爬虫">
+            <img src="img/1.jpg" alt="爬虫">
         </td>
         <td>爬虫2<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/2.jpg" alt="爬虫">
+            <img src="img/2.jpg" alt="爬虫">
         </td>
     </tr>
     <tr>
         <td>数据库<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/3.jpg" alt="mysql">
+            <img src="img/3.jpg" alt="mysql">
         </td>
         <td>导入Neo4j<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/4.jpg" alt="toNeo4j">
+            <img src="img/4.jpg" alt="toNeo4j">
         </td>
     </tr>
     <tr>
         <td>后台登录<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/5.jpg" alt="后台登录">
+            <img src="img/5.jpg" alt="后台登录">
         </td>
         <td>后台管理<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/6.jpg" alt="后台管理">
+            <img src="img/6.jpg" alt="后台管理">
         </td>
     </tr>
     <tr>
         <td>文献-作者<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/7.jpg" alt="Neo4j">
+            <img src="img/7.jpg" alt="Neo4j">
         </td>
         <td>学者-组织<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/8.jpg" alt="Neo4j">
+            <img src="img/8.jpg" alt="Neo4j">
         </td>
     </tr>
     <tr>
         <td>检索<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/9.jpg" alt="检索">
+            <img src="img/9.jpg" alt="检索">
         </td>
         <td>文章详情<br/>
-            <img src="https://cdn.jsdelivr.net/gh/eternidad33/docsearch/img/10.jpg" alt="文章详情">
+            <img src="img/10.jpg" alt="文章详情">
         </td>
     </tr>
 </table>
