@@ -12,7 +12,6 @@
 
 website 代码
 resource 资源文件
-document 相关文档
 ```
 
 ## 功能实现
@@ -23,12 +22,8 @@ document 相关文档
     <a href="https://downloads.mysql.com/archives/community/"><img src="https://img.shields.io/badge/MySQL-5.7.29-f29111?logo=mysql&style=flat" alt="MySQL"/></a>
     <a href="https://we-yun.com/index.php/blog/releases-56.html"><img src="https://img.shields.io/badge/Neo4j-4.2.1-6dce9d?logo=neo4j&style=flat" alt="Neo4j"/></a>
     <a href="https://github.com/MicrosoftArchive/redis/releases"><img src="https://img.shields.io/badge/Redis-3.2.100-d72a20?logo=redis&style=flat" alt="Redis"/></a>
-    <a href="https://magi.com/"><img src="https://img.shields.io/badge/magi.com-14a2f5" alt="Python题解"></a>
+    <a href="https://magi.com/"><img src="https://img.shields.io/badge/magi.com-14a2f5" alt="magi.com"></a>
 </p>
-
-
-
-
 - [x] ~~爬取知网相关数据~~
 - [ ] 前台控制爬虫
 - [x] ~~后台管理系统~~
@@ -46,42 +41,42 @@ document 相关文档
 <table>
     <tr>
         <td>爬虫1<br/>
-            <img src="img/1.jpg" alt="爬虫">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch1.jpg" alt="爬虫">
         </td>
         <td>爬虫2<br/>
-            <img src="img/2.jpg" alt="爬虫">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch2.jpg" alt="爬虫">
         </td>
     </tr>
     <tr>
         <td>数据库<br/>
-            <img src="img/3.jpg" alt="mysql">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch3.jpg" alt="mysql">
         </td>
         <td>导入Neo4j<br/>
-            <img src="img/4.jpg" alt="toNeo4j">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch4.jpg" alt="toNeo4j">
         </td>
     </tr>
     <tr>
         <td>后台登录<br/>
-            <img src="img/5.jpg" alt="后台登录">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch5.jpg" alt="后台登录">
         </td>
         <td>后台管理<br/>
-            <img src="img/6.jpg" alt="后台管理">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch6.jpg" alt="后台管理">
         </td>
     </tr>
     <tr>
         <td>文献-作者<br/>
-            <img src="img/7.jpg" alt="Neo4j">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch7.jpg" alt="Neo4j">
         </td>
         <td>学者-组织<br/>
-            <img src="img/8.jpg" alt="Neo4j">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch8.jpg" alt="Neo4j">
         </td>
     </tr>
     <tr>
         <td>检索<br/>
-            <img src="img/9.jpg" alt="检索">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch9.jpg" alt="检索">
         </td>
         <td>文章详情<br/>
-            <img src="img/10.jpg" alt="文章详情">
+            <img src="https://cdn.jsdelivr.net/gh/eternidad33/picbed/img/docsearch10.jpg" alt="文章详情">
         </td>
     </tr>
 </table>
