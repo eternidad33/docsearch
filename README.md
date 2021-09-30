@@ -24,6 +24,8 @@ resource 资源文件
     <a href="https://github.com/MicrosoftArchive/redis/releases"><img src="https://img.shields.io/badge/Redis-3.2.100-d72a20?logo=redis&style=flat" alt="Redis"/></a>
     <a href="https://magi.com/"><img src="https://img.shields.io/badge/magi.com-14a2f5" alt="magi.com"></a>
 </p>
+
+
 - [x] ~~爬取知网相关数据~~
 - [ ] 前台控制爬虫
 - [x] ~~后台管理系统~~
